@@ -10,13 +10,14 @@ const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU"; // Replace with your actual anon key
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
 let container;
 let camera, scene, renderer;
 let controller, reticle, pmremGenerator, current_object, controls;
 let placedObjects = [];
 let selectedObject = null;
-
-
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 let touchDown, touchX, touchY, deltaX, deltaY;
@@ -66,53 +67,43 @@ const fetchModels = async () => {
     modelItem.href = "#";
     modelItem.textContent = model.name; // Display model name
     modelItem.addEventListener("click", () => {
-      if (current_object) scene.remove(current_object); // Remove any existing model
-      loadModel(model.glb_url); // Load model's URL
+      if (current_object) scene.remove(current_object);
+      loadModel(model.glb_url, model.id); // Load model's URL
     });
     sidenav.appendChild(modelItem);
   });
 };
 
+const showObjectDetails = async (objectId) => {
+  const { data, error } = await supabase
+    .from("models")
+    .select("*")
+    .eq("id", objectId)
+    .single();
 
-// const loadModel = (url) => {
-//   if (!url) {
-//     console.error("Invalid GLB URL:", url);
-//     alert("Model URL is invalid or missing.");
-//     return;
-//   }
+  if (error) {
+    console.error("Error fetching object details:", error);
+    alert("Failed to fetch object details.");
+    return;
+  }
 
-//   const loader = new GLTFLoader();
-//   loader.load(
-//     url,
-//     (glb) => {
-//       current_object = glb.scene;
-//       scene.add(current_object);
+  // Update the popup with model details
+  const popup = document.getElementById("popup");
+  popup.innerHTML = `
+    <h2>${data.name}</h2>
+    <p>${data.description}</p>
+  `;
+  popup.style.display = "block"; // Make it visible
+  popup.style.zIndex = "1000";
 
-//       arPlace();
+  popup.addEventListener("click", () => {
+    popup.style.display = "none";
+  });
 
-//       const box = new THREE.Box3().setFromObject(current_object);
-//       box.getCenter(controls.target);
-//       controls.update();
-
-//       render();
-//       console.log("Model loaded successfully:", url);
-//     },
-//     undefined,
-//     (error) =>
-//       console.error("An error occurred while loading the model:", error)
-//   );
-// };
+};
 
 
-// const arPlace = () => {
-//   if (reticle.visible) {
-//     current_object.position.setFromMatrixPosition(reticle.matrix);
-//     current_object.visible = true;
-//   }
-// };
-
-
-const loadModel = (url) => {
+const loadModel = (url, id) => {
   if (!url) {
     console.error("Invalid GLB URL:", url);
     alert("Model URL is invalid or missing.");
@@ -124,8 +115,8 @@ const loadModel = (url) => {
     url,
     (glb) => {
       current_object = glb.scene;
+      current_object.userData.objectId = id;
 
-      // Add temporary object for placement
       current_object.traverse((node) => {
         if (node.isMesh) {
           node.castShadow = true;
@@ -133,13 +124,34 @@ const loadModel = (url) => {
         }
       });
 
-      console.log("Model loaded successfully:", url);
+      console.log("Model loaded successfully:", url, id);
     },
     undefined,
     (error) =>
       console.error("An error occurred while loading the model:", error)
   );
 };
+
+// const arPlace = () => {
+//   if (reticle.visible && current_object) {
+//     const placedObject = current_object.clone();
+//     placedObject.position.setFromMatrixPosition(reticle.matrix);
+//     placedObject.visible = true;
+//     placedObject.userData.objectId = current_object.userData.objectId;
+
+//     scene.add(placedObject);
+
+//     // Add only the mesh objects to raycaster targets
+//     placedObject.traverse((node) => {
+//       if (node.isMesh) {
+//         node.userData.objectId = current_object.userData.objectId; // Ensure userData is attached to child meshes
+//         placedObjects.push(node);
+//       }
+//     });
+
+//     console.log("Object placed with ID:", current_object.userData.objectId);
+//   }
+// };
 
 const arPlace = () => {
   if (reticle.visible && current_object) {
@@ -150,12 +162,15 @@ const arPlace = () => {
     scene.add(placedObject);
     placedObjects.push(placedObject);
 
+    placedObject.userData.objectId = current_object.userData.objectId;
+
     // Set the newly placed object as the selected object
     selectedObject = placedObject;
 
     console.log("Object placed at:", placedObject.position);
   }
 };
+
 
 const rotateObjects = () => {
   if (selectedObject) {
@@ -217,6 +232,7 @@ const animate = (timestamp, frame) => {
 const render = () => {
   renderer.render(scene, camera);
 };
+
 
 const init = () => {
   container = document.createElement("div");
@@ -294,8 +310,31 @@ const init = () => {
     deltaY = e.touches[0].pageY - touchY;
     touchX = e.touches[0].pageX;
     touchY = e.touches[0].pageY;
-
     rotateObjects();
+
+     if (selectedObject) {
+       const scaleFactor = 1 - deltaY / 1000;
+       selectedObject.scale.multiplyScalar(scaleFactor);
+     }
+  });
+
+  renderer.domElement.addEventListener("pointerdown", (event) => {
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(placedObjects);
+
+    console.log("Intersected objects:", intersects);
+
+    if (intersects.length > 0) {
+      selectedObject = intersects[0].object;
+      const objectId = selectedObject.userData.objectId;
+
+      console.log("Selected Object ID:", objectId);
+
+      showObjectDetails(objectId);
+    }
   });
 };
 
