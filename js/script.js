@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
 import { createClient } from "@supabase/supabase-js";
+// import { initARjs } from "./arjs.js";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
@@ -30,7 +31,6 @@ const closeNav = () => {
   document.getElementById("mySidenav").style.width = "0";
 };
 
-
 document.getElementById("open-nav").addEventListener("click", openNav);
 document.getElementById("close-nav").addEventListener("click", closeNav);
 
@@ -47,8 +47,6 @@ $("#place-button").click(() => {
   arPlace();
 });
 
-
-
 ///Supabase fetch models
 const fetchModels = async () => {
   const { data, error } = await supabase.from("models").select("*");
@@ -61,16 +59,44 @@ const fetchModels = async () => {
 
   const sidenav = document.getElementById("mySidenav");
   data.forEach((model) => {
-    const modelItem = document.createElement("a");
-    modelItem.className = "ar-object";
-    modelItem.id = model.id; // Use the model ID
-    modelItem.href = "#";
-    modelItem.textContent = model.name; // Display model name
-    modelItem.addEventListener("click", () => {
-      if (current_object) scene.remove(current_object);
-      loadModel(model.glb_url, model.id); // Load model's URL
-    });
+    const modelItem = document.createElement("div");
+    modelItem.className = "model-item";
+    modelItem.id = `model-${model.id}`;
+
+    const modelName = document.createElement("span");
+    modelName.textContent = model.name;
+
+    modelItem.appendChild(modelName);
+
+    const previewContainer = document.createElement("div");
+    previewContainer.id = `preview-${model.id}`;
+    modelItem.appendChild(previewContainer);
+
+    // Append to sidenav first to ensure it's in the DOM
     sidenav.appendChild(modelItem);
+
+    // Call renderModelPreview after appending
+    const previewId = `preview-${model.id}`;
+    const containerExists = document.getElementById(previewId);
+    if (containerExists) {
+      renderModelPreview(model.glb_url, previewId);
+    } else {
+      console.error(`Preview container with ID ${previewId} not found.`);
+    }
+
+    modelItem.addEventListener("click", () => {
+      // Remove 'active' class from all items
+      document.querySelectorAll(".model-item").forEach((item) => {
+        item.classList.remove("active");
+      });
+
+      // Add 'active' class to the clicked item
+      modelItem.classList.add("active");
+
+      // Load the selected model
+      if (current_object) scene.remove(current_object);
+      loadModel(model.glb_url, model.id);
+    });
   });
 };
 
@@ -99,9 +125,7 @@ const showObjectDetails = async (objectId) => {
   popup.addEventListener("click", () => {
     popup.style.display = "none";
   });
-
 };
-
 
 const loadModel = (url, id) => {
   if (!url) {
@@ -132,45 +156,43 @@ const loadModel = (url, id) => {
   );
 };
 
-// const arPlace = () => {
-//   if (reticle.visible && current_object) {
-//     const placedObject = current_object.clone();
-//     placedObject.position.setFromMatrixPosition(reticle.matrix);
-//     placedObject.visible = true;
-//     placedObject.userData.objectId = current_object.userData.objectId;
-
-//     scene.add(placedObject);
-
-//     // Add only the mesh objects to raycaster targets
-//     placedObject.traverse((node) => {
-//       if (node.isMesh) {
-//         node.userData.objectId = current_object.userData.objectId; // Ensure userData is attached to child meshes
-//         placedObjects.push(node);
-//       }
-//     });
-
-//     console.log("Object placed with ID:", current_object.userData.objectId);
-//   }
-// };
-
 const arPlace = () => {
   if (reticle.visible && current_object) {
     const placedObject = current_object.clone();
     placedObject.position.setFromMatrixPosition(reticle.matrix);
     placedObject.visible = true;
 
+    placedObject.traverse((node) => {
+      if (node.isMesh) {
+        node.userData.objectId = current_object.userData.objectId;
+      }
+    });
+
     scene.add(placedObject);
     placedObjects.push(placedObject);
 
-    placedObject.userData.objectId = current_object.userData.objectId;
-
-    // Set the newly placed object as the selected object
     selectedObject = placedObject;
 
-    console.log("Object placed at:", placedObject.position);
+    console.log("Object placed with ID:", current_object.userData.objectId);
   }
 };
 
+// const arPlace = () => {
+//   if (reticle.visible && current_object) {
+//     const placedObject = current_object.clone();
+//     placedObject.position.setFromMatrixPosition(reticle.matrix);
+//     placedObject.visible = true;
+
+//     scene.add(placedObject);
+//     placedObjects.push(placedObject);
+
+//     placedObject.userData.objectId = current_object.userData.objectId;
+
+//     selectedObject = placedObject;
+
+//     console.log("Object placed at:", placedObject.position);
+//   }
+// };
 
 const rotateObjects = () => {
   if (selectedObject) {
@@ -233,6 +255,43 @@ const render = () => {
   renderer.render(scene, camera);
 };
 
+const renderModelPreview = (modelUrl, containerId) => {
+  const previewScene = new THREE.Scene();
+  const previewCamera = new THREE.PerspectiveCamera(50, 1, 0.01, 10);
+  previewCamera.position.set(2, 2, 2);
+  previewCamera.lookAt(0, 0, 0);
+
+  const previewLight = new THREE.AmbientLight(0xffffff, 1);
+  previewScene.add(previewLight);
+
+  const previewRenderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+  });
+  previewRenderer.setSize(200, 200); // Adjust preview size as needed
+
+  // Attach the renderer canvas to the menu
+  const container = document.getElementById(containerId);
+  container.appendChild(previewRenderer.domElement);
+
+  // Load and render the model
+  const loader = new GLTFLoader();
+  loader.load(modelUrl, (gltf) => {
+    const model = gltf.scene;
+    previewScene.add(model);
+
+    // Adjust model scaling and positioning if necessary
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    model.scale.setScalar(1 / maxDim);
+    model.position.sub(center);
+
+    // Render the model into the canvas
+    previewRenderer.render(previewScene, previewCamera);
+  });
+};
 
 const init = () => {
   container = document.createElement("div");
@@ -312,10 +371,10 @@ const init = () => {
     touchY = e.touches[0].pageY;
     rotateObjects();
 
-     if (selectedObject) {
-       const scaleFactor = 1 - deltaY / 1000;
-       selectedObject.scale.multiplyScalar(scaleFactor);
-     }
+    if (selectedObject) {
+      const scaleFactor = 1 - deltaY / 1000;
+      selectedObject.scale.multiplyScalar(scaleFactor);
+    }
   });
 
   renderer.domElement.addEventListener("pointerdown", (event) => {
@@ -323,19 +382,65 @@ const init = () => {
     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(pointer, camera);
-    const intersects = raycaster.intersectObjects(placedObjects);
+
+    const intersects = raycaster.intersectObjects(placedObjects, true);
 
     console.log("Intersected objects:", intersects);
 
     if (intersects.length > 0) {
-      selectedObject = intersects[0].object;
+      let clickedObject = intersects[0].object;
+
+      while (clickedObject.parent && clickedObject.parent !== scene) {
+        clickedObject = clickedObject.parent;
+      }
+
+      selectedObject = clickedObject;
       const objectId = selectedObject.userData.objectId;
 
-      console.log("Selected Object ID:", objectId);
-
-      showObjectDetails(objectId);
+      if (objectId) {
+        console.log("Selected Object ID:", objectId);
+        showObjectDetails(objectId);
+      } else {
+        console.warn("No objectId found in userData");
+      }
     }
   });
+
 };
 
-init();
+
+const isWebXRSupported = async () => {
+  if (!navigator.xr) return false;
+  try {
+    return await navigator.xr.isSessionSupported("immersive-ar");
+  } catch {
+    return false;
+  }
+};
+
+const initApp = async () => {
+  const webxrSupported = await isWebXRSupported();
+
+  if (webxrSupported) {
+    console.log("WebXR is supported. Initializing WebXR.");
+    init();
+  } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
+    console.log("WebXR not supported. Using LaunchXR for AR support.");
+    // Initialize LaunchAR
+    window.LAUNCHAR.initialize({
+      key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
+      redirect: true,
+    }).then(() => {
+      window.LAUNCHAR.on("arSessionStarted", () => {
+        console.log("LaunchXR AR session started.");
+        init();
+      });
+    });
+  } else {
+    console.log(
+      "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
+    ); // Use AR.js or another fallback
+  }
+};
+
+initApp();
