@@ -1,20 +1,57 @@
 body {
   background-color: black;
-  color: #fff;
   font-family: "Lato", sans-serif;
 }
   
 .sidenav {
-  height: 100%;
-  width: 0;
+  height: 0; /* Start closed */
+  width: 100%; /* Full width for bottom menu */
   position: fixed;
   z-index: 1;
-  top: 0;
+  bottom: 0; /* Position at the bottom */
   left: 0;
-  background-color: #111;
-  overflow-x: hidden;
-  transition: 0.5s;
-  padding-top: 60px;
+  background-color: #fff;
+  overflow-y: auto; /* Enable vertical scrolling */
+  transition: height 0.5s ease-in-out;
+  padding: 0;
+  padding-left: 1rem;
+}
+
+.category-row h3 {
+  color: #000;
+}
+
+.sidenav.open {
+  height: 90%; /* Adjust height as needed when open */
+}
+
+
+#nav-toggle {
+  font-size: 30px;
+  color: #fff;
+  position: absolute;
+  z-index: 2;
+  top: 2rem;
+  left: 2rem;
+  cursor: pointer;
+}
+
+.category-row .model-item {
+  flex: 0 0 auto;
+  text-align: center;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  color: #000;
+  cursor: pointer;
+}
+
+.category-row {
+  display: flex;
+  gap: .8rem;
+}
+
+.category-row .model-item.active {
+  border: 2px solid #f1f1f1;
 }
   
 .sidenav a {

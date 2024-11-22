@@ -23,16 +23,29 @@ let hitTestSource = null;
 let hitTestSourceRequested = false;
 let touchDown, touchX, touchY, deltaX, deltaY;
 
-const openNav = () => {
-  document.getElementById("mySidenav").style.width = "250px";
+// const openNav = () => {
+//   document.getElementById("mySidenav").classList.add("open");
+// };
+
+// const closeNav = () => {
+//   document.getElementById("mySidenav").classList.remove("open");
+// };
+
+// document.getElementById("open-nav").addEventListener("click", openNav);
+// document.getElementById("close-nav").addEventListener("click", closeNav);
+
+const toggleNav = () => {
+  const sidenav = document.getElementById("mySidenav");
+  const navToggle = document.getElementById("nav-toggle");
+  const isOpen = sidenav.classList.toggle("open");
+
+  // Toggle the icon
+  navToggle.textContent = isOpen ? "×" : "☰";
 };
 
-const closeNav = () => {
-  document.getElementById("mySidenav").style.width = "0";
-};
+document.getElementById("nav-toggle").addEventListener("click", toggleNav);
 
-document.getElementById("open-nav").addEventListener("click", openNav);
-document.getElementById("close-nav").addEventListener("click", closeNav);
+
 
 $(".ar-object").click(function () {
   // if (current_object != null) {
@@ -47,7 +60,6 @@ $("#place-button").click(() => {
   arPlace();
 });
 
-///Supabase fetch models
 const fetchModels = async () => {
   const { data, error } = await supabase.from("models").select("*");
 
@@ -58,47 +70,139 @@ const fetchModels = async () => {
   }
 
   const sidenav = document.getElementById("mySidenav");
+  const categories = {};
+
   data.forEach((model) => {
-    const modelItem = document.createElement("div");
-    modelItem.className = "model-item";
-    modelItem.id = `model-${model.id}`;
-
-    const modelName = document.createElement("span");
-    modelName.textContent = model.name;
-
-    modelItem.appendChild(modelName);
-
-    const previewContainer = document.createElement("div");
-    previewContainer.id = `preview-${model.id}`;
-    modelItem.appendChild(previewContainer);
-
-    // Append to sidenav first to ensure it's in the DOM
-    sidenav.appendChild(modelItem);
-
-    // Call renderModelPreview after appending
-    const previewId = `preview-${model.id}`;
-    const containerExists = document.getElementById(previewId);
-    if (containerExists) {
-      renderModelPreview(model.glb_url, previewId);
-    } else {
-      console.error(`Preview container with ID ${previewId} not found.`);
+    if (!categories[model.category]) {
+      categories[model.category] = [];
     }
+    categories[model.category].push(model);
+  });
 
-    modelItem.addEventListener("click", () => {
-      // Remove 'active' class from all items
-      document.querySelectorAll(".model-item").forEach((item) => {
-        item.classList.remove("active");
+  for (const [category, models] of Object.entries(categories)) {
+    const categoryRow = document.createElement("div");
+    categoryRow.className = "category-row";
+
+    const categoryLabel = document.createElement("h3");
+    categoryLabel.textContent = category;
+    // categoryLabel.style.color = "#fff";
+    sidenav.appendChild(categoryLabel);
+
+    models.forEach((model) => {
+      const modelItem = document.createElement("div");
+      modelItem.className = "model-item";
+      modelItem.id = `model-${model.id}`;
+
+      const modelName = document.createElement("span");
+      modelName.textContent = model.name;
+
+      const previewContainer = document.createElement("div");
+      previewContainer.id = `preview-${model.id}`;
+      previewContainer.className = "preview-container";
+      previewContainer.style.width = "100px";
+      previewContainer.style.height = "100px";
+
+      modelItem.appendChild(previewContainer);
+      modelItem.appendChild(modelName);
+      categoryRow.appendChild(modelItem);
+
+      sidenav.appendChild(categoryRow);
+
+      // renderModelPreview(model.glb_url, previewContainer.id);
+      fetchAndRenderPreviews();
+
+      modelItem.addEventListener("click", () => {
+        document.querySelectorAll(".model-item").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        modelItem.classList.add("active");
+
+        if (current_object) {
+          scene.remove(current_object);
+        }
+
+        // Ensure the correct URL is passed
+        loadModel(model.glb_url, model.id);
       });
-
-      // Add 'active' class to the clicked item
-      modelItem.classList.add("active");
-
-      // Load the selected model
-      if (current_object) scene.remove(current_object);
-      loadModel(model.glb_url, model.id);
     });
+  }
+};
+
+const generateHighQualityPreview = async (
+  modelUrl,
+  width = 800,
+  height = 800
+) => {
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(width, height);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+  camera.position.set(1.5, 1.5, 1.5); //size of the model
+  camera.lookAt(0, 0, 0);
+
+  const light = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(light);
+
+  const loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    loader.load(
+      modelUrl,
+      (gltf) => {
+        const model = gltf.scene;
+
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+
+        model.scale.setScalar(1 / maxDim);
+        model.position.sub(center);
+
+        scene.add(model);
+        scene.background = new THREE.Color(0xffffff);
+
+        renderer.render(scene, camera);
+
+        const dataUrl = renderer.domElement.toDataURL("image/png");
+
+        renderer.dispose();
+        scene.clear();
+
+        resolve(dataUrl);
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading model:", error);
+        reject(error);
+      }
+    );
   });
 };
+
+const fetchAndRenderPreviews = async () => {
+  const { data: models, error } = await supabase.from("models").select("*");
+  if (error) {
+    console.error("Error fetching models:", error);
+    return;
+  }
+
+  for (const model of models) {
+    const previewUrl = await generateHighQualityPreview(model.glb_url);
+    const container = document.getElementById(`preview-${model.id}`);
+    if (container) {
+      const img = document.createElement("img");
+      img.src = previewUrl;
+      img.style.width = "100%";
+      img.style.height = "100%";
+      container.innerHTML = "";
+      container.appendChild(img);
+    }
+  }
+};
+
+
 
 const showObjectDetails = async (objectId) => {
   const { data, error } = await supabase
@@ -177,23 +281,6 @@ const arPlace = () => {
   }
 };
 
-// const arPlace = () => {
-//   if (reticle.visible && current_object) {
-//     const placedObject = current_object.clone();
-//     placedObject.position.setFromMatrixPosition(reticle.matrix);
-//     placedObject.visible = true;
-
-//     scene.add(placedObject);
-//     placedObjects.push(placedObject);
-
-//     placedObject.userData.objectId = current_object.userData.objectId;
-
-//     selectedObject = placedObject;
-
-//     console.log("Object placed at:", placedObject.position);
-//   }
-// };
-
 const rotateObjects = () => {
   if (selectedObject) {
     selectedObject.rotation.y += deltaX / 100;
@@ -253,44 +340,6 @@ const animate = (timestamp, frame) => {
 
 const render = () => {
   renderer.render(scene, camera);
-};
-
-const renderModelPreview = (modelUrl, containerId) => {
-  const previewScene = new THREE.Scene();
-  const previewCamera = new THREE.PerspectiveCamera(50, 1, 0.01, 10);
-  previewCamera.position.set(2, 2, 2);
-  previewCamera.lookAt(0, 0, 0);
-
-  const previewLight = new THREE.AmbientLight(0xffffff, 1);
-  previewScene.add(previewLight);
-
-  const previewRenderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true,
-  });
-  previewRenderer.setSize(200, 200); // Adjust preview size as needed
-
-  // Attach the renderer canvas to the menu
-  const container = document.getElementById(containerId);
-  container.appendChild(previewRenderer.domElement);
-
-  // Load and render the model
-  const loader = new GLTFLoader();
-  loader.load(modelUrl, (gltf) => {
-    const model = gltf.scene;
-    previewScene.add(model);
-
-    // Adjust model scaling and positioning if necessary
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    model.scale.setScalar(1 / maxDim);
-    model.position.sub(center);
-
-    // Render the model into the canvas
-    previewRenderer.render(previewScene, previewCamera);
-  });
 };
 
 const init = () => {
@@ -418,29 +467,31 @@ const isWebXRSupported = async () => {
   }
 };
 
-const initApp = async () => {
-  const webxrSupported = await isWebXRSupported();
+// const initApp = async () => {
+//   const webxrSupported = await isWebXRSupported();
 
-  if (webxrSupported) {
-    console.log("WebXR is supported. Initializing WebXR.");
-    init();
-  } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
-    console.log("WebXR not supported. Using LaunchXR for AR support.");
-    // Initialize LaunchAR
-    window.LAUNCHAR.initialize({
-      key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
-      redirect: true,
-    }).then(() => {
-      window.LAUNCHAR.on("arSessionStarted", () => {
-        console.log("LaunchXR AR session started.");
-        init();
-      });
-    });
-  } else {
-    console.log(
-      "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
-    ); // Use AR.js or another fallback
-  }
-};
+//   if (webxrSupported) {
+//     console.log("WebXR is supported. Initializing WebXR.");
+//     init();
+//   } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
+//     console.log("WebXR not supported. Using LaunchXR for AR support.");
+//     // Initialize LaunchAR
+//     window.LAUNCHAR.initialize({
+//       key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
+//       redirect: true,
+//     }).then(() => {
+//       window.LAUNCHAR.on("arSessionStarted", () => {
+//         console.log("LaunchXR AR session started.");
+//         init();
+//       });
+//     });
+//   } else {
+//     console.log(
+//       "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
+//     ); // Use AR.js or another fallback
+//   }
+// };
 
-initApp();
+// initApp();
+
+init();
