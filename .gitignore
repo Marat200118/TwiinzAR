@@ -25,3 +25,4 @@ localhost.key
 *.njsproj
 *.sln
 *.sw?
+.vercel

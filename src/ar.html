@@ -5,18 +5,18 @@
   <title>three.js AR - Hit Test</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link type="text/css" rel="stylesheet" href="/style.css">
+  <link type="text/css" rel="stylesheet" href="style.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.3.3/aframe/build/ar.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/threex-arjs@1.7.2/threex-ar.js"></script>
-  <!-- <script src="https://launchar.app/sdk/v1?key=OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj&redirect=true"></script> -->
+  <script src="https://launchar.app/sdk/v1?key=OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj&redirect=true"></script>
 </head>
 
 <body>
 
   <div id="content">
     <div id="mySidenav" class="sidenav">
-
+      <div id="room-gallery"></div>
     </div>
     <div id="info-container"></div>
     <div id="container" style="position: fixed;"></div>
@@ -28,6 +28,8 @@
       <p></p>
     </div>
     <button type="button" id="place-button">PLACE</button>
+    <button id="submit-button">Submit Room</button>
+
   </div>
 
   <div id="iphone-content">

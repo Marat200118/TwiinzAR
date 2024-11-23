@@ -1,14 +1,23 @@
 import { defineConfig } from "vite";
+import { resolve } from "path";
 import fs from "fs";
 
 export default defineConfig({
-  // server: {
-  //   https: {
-  //     key: fs.readFileSync("./localhost-key.pem"),
-  //     cert: fs.readFileSync("./localhost.pem"),
-  //   },
-  // },
+  root: "src/",
+  // publicDir: "./src/public",
+  build: {
+    outDir: "../dist",
+    emptyOutDir: true,
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "src/index.html"),
+        ar: resolve(__dirname, "src/ar.html"),
+      },
+    },
+  },
   server: {
     cors: true,
   },
 });
+

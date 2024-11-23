@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "deploy": "vercel --prod",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -14,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.46.1",
     "jquery": "^3.7.1",
-    "three": "^0.170.0"
+    "three": "^0.170.0",
+    "vercel": "^39.1.1"
   }
 }
