@@ -14,7 +14,6 @@ body {
   overflow-y: auto; /* Enable vertical scrolling */
   transition: height 0.5s ease-in-out;
   padding: 0;
-  padding-left: 1rem;
 }
 
 .category-row h3 {
@@ -98,6 +97,15 @@ body {
   display: none;
 }
 
+#submit-button {
+  position: absolute;
+  bottom: 80px;
+  left: calc(50% - 50px);
+  width: 100px;
+  height: 35px;
+  display: block;
+}
+
 .link-to-ar {
   position: absolute;
   bottom: 20px;
@@ -116,6 +124,7 @@ body {
 }
 
 .main-page-content {
+  color: #fff;
   display: flex;
   flex-direction: column;
   justify-items: center;

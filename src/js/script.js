@@ -5,7 +5,9 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
 import { createClient } from "@supabase/supabase-js";
 import { generateHighQualityPreview } from "./renderModelPreview";
+import { v4 as uuidv4 } from "uuid";
 
+const modelId = uuidv4();
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU"; // Replace with your actual anon key
@@ -193,7 +195,10 @@ const arPlace = () => {
   if (reticle.visible && current_object) {
     const placedObject = current_object.clone();
     placedObject.position.setFromMatrixPosition(reticle.matrix);
+    placedObject.rotation.copy(reticle.rotation); // Ensure rotation is set
+    placedObject.scale.copy(current_object.scale);
     placedObject.visible = true;
+    console.log("current_object user data id", current_object.userData.objectId);
 
     placedObject.traverse((node) => {
       if (node.isMesh) {
@@ -201,22 +206,22 @@ const arPlace = () => {
       }
     });
 
-    const position = placedObject.position;
-    const rotation = placedObject.rotation;
+    scene.add(placedObject);
 
     placedObjects.push({
+      mesh: placedObject,
       modelId: current_object.userData.objectId,
-      position: { x: position.x, y: position.y, z: position.z },
-      rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
+      position: placedObject.position.toArray(),
+      rotation: placedObject.rotation.toArray(),
+      scale: placedObject.scale.toArray(),
     });
-
-    scene.add(placedObject);
 
     selectedObject = placedObject;
 
     console.log("Object placed:", placedObject);
   }
 };
+
 
 const rotateObjects = () => {
   if (selectedObject) {
@@ -388,27 +393,46 @@ const init = async () => {
 
     raycaster.setFromCamera(pointer, camera);
 
-    const intersects = raycaster.intersectObjects(placedObjects, true);
-
-    console.log("Intersected objects:", intersects);
-
+    const intersects = raycaster.intersectObjects(scene.children, true); // Ensure recursive check
     if (intersects.length > 0) {
-      let clickedObject = intersects[0].object;
+      const [hit] = intersects;
+      if (hit.object && hit.object.isMesh) {
+        console.log("Intersected object:", hit.object);
+         let clickedObject = intersects[0].object;
 
-      while (clickedObject.parent && clickedObject.parent !== scene) {
-        clickedObject = clickedObject.parent;
-      }
+         while (clickedObject.parent && clickedObject.parent !== scene) {
+           clickedObject = clickedObject.parent;
+         }
 
-      selectedObject = clickedObject;
-      const objectId = selectedObject.userData.objectId;
+         selectedObject = clickedObject;
+         const objectId = selectedObject.userData.objectId;
 
-      if (objectId) {
-        console.log("Selected Object ID:", objectId);
-        showObjectDetails(objectId);
-      } else {
-        console.warn("No objectId found in userData");
+         if (objectId) {
+           console.log("Selected Object ID:", objectId);
+           showObjectDetails(objectId);
+         } else {
+           console.warn("No objectId found in userData");
+         }
       }
     }
+
+    // if (intersects.length > 0) {
+    //   let clickedObject = intersects[0].object;
+
+    //   while (clickedObject.parent && clickedObject.parent !== scene) {
+    //     clickedObject = clickedObject.parent;
+    //   }
+
+    //   selectedObject = clickedObject;
+    //   const objectId = selectedObject.userData.objectId;
+
+    //   if (objectId) {
+    //     console.log("Selected Object ID:", objectId);
+    //     showObjectDetails(objectId);
+    //   } else {
+    //     console.warn("No objectId found in userData");
+    //   }
+    // }
   });
 
 };
@@ -422,21 +446,46 @@ const submitRoom = async () => {
   const roomModels = placedObjects.map((object) => ({
     room_id: roomId,
     model_id: object.modelId,
-    position: JSON.stringify(object.position),
-    rotation: JSON.stringify(object.rotation),
+    position: {
+      x: object.mesh.position.x,
+      y: object.mesh.position.y,
+      z: object.mesh.position.z,
+    },
+    rotation: {
+      x: object.mesh.rotation.x,
+      y: object.mesh.rotation.y,
+      z: object.mesh.rotation.z,
+    },
+    scale: {
+      x: object.mesh.scale.x,
+      y: object.mesh.scale.y,
+      z: object.mesh.scale.z,
+    },
   }));
+  console.log("Room ID:", roomId);
+  console.log("model id", roomModels[0].model_id);
+  console.log("position", roomModels[0].position);
+  console.log("rotation", roomModels[0].rotation);
+  console.log("scale", roomModels[0].scale);
+  console.log("Room Models Payload:", roomModels[0]);
 
-  const { data, error } = await supabase.from("roommodels").insert(roomModels);
+  console.log("model_id type:", typeof current_object.userData.objectId);
+  console.log("model_id value:", current_object.userData.objectId);
 
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from("roommodels")
+      .insert(roomModels)
+      .select();
+    if (error) throw error;
+    alert("Room saved successfully!");
+    console.log("Room models saved:", data);
+  } catch (error) {
     console.error("Error saving room models:", error);
     alert("Failed to save the room. Please try again.");
-    return;
   }
-
-  alert("Room saved successfully!");
-  console.log("Room models saved:", data);
 };
+
 
 
 document.getElementById("submit-button").addEventListener("click", submitRoom);
@@ -451,31 +500,31 @@ const isWebXRSupported = async () => {
   }
 };
 
-const initApp = async () => {
-  const webxrSupported = await isWebXRSupported();
+// const initApp = async () => {
+//   const webxrSupported = await isWebXRSupported();
 
-  if (webxrSupported) {
-    console.log("WebXR is supported. Initializing WebXR.");
-    init();
-  } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
-    console.log("WebXR not supported. Using LaunchXR for AR support.");
-    // Initialize LaunchAR
-    window.LAUNCHAR.initialize({
-      key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
-      redirect: true,
-    }).then(() => {
-      window.LAUNCHAR.on("arSessionStarted", () => {
-        console.log("LaunchXR AR session started.");
-        init();
-      });
-    });
-  } else {
-    console.log(
-      "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
-    ); // Use AR.js or another fallback
-  }
-};
+//   if (webxrSupported) {
+//     console.log("WebXR is supported. Initializing WebXR.");
+//     init();
+//   } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
+//     console.log("WebXR not supported. Using LaunchXR for AR support.");
+//     // Initialize LaunchAR
+//     window.LAUNCHAR.initialize({
+//       key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
+//       redirect: true,
+//     }).then(() => {
+//       window.LAUNCHAR.on("arSessionStarted", () => {
+//         console.log("LaunchXR AR session started.");
+//         init();
+//       });
+//     });
+//   } else {
+//     console.log(
+//       "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
+//     ); // Use AR.js or another fallback
+//   }
+// };
 
-initApp();
+// initApp();
 
-// init();
+init();
