@@ -5,12 +5,11 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
 import { createClient } from "@supabase/supabase-js";
 import { generateHighQualityPreview } from "./renderModelPreview";
-import page from "page";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -196,10 +195,7 @@ const arPlace = () => {
     placedObject.rotation.copy(reticle.rotation); // Ensure rotation is set
     placedObject.scale.copy(current_object.scale);
     placedObject.visible = true;
-    console.log(
-      "current_object user data id",
-      current_object.userData.objectId
-    );
+    console.log("current_object user data id", current_object.userData.objectId);
 
     placedObject.traverse((node) => {
       if (node.isMesh) {
@@ -285,10 +281,6 @@ const render = () => {
 };
 
 const createRoom = async () => {
-  if (roomId) {
-    console.warn("Room already created with ID:", roomId);
-    return;
-  }
   const { data, error } = await supabase
     .from("rooms")
     .insert({})
@@ -401,21 +393,21 @@ const init = async () => {
       const [hit] = intersects;
       if (hit.object && hit.object.isMesh) {
         console.log("Intersected object:", hit.object);
-        let clickedObject = intersects[0].object;
+         let clickedObject = intersects[0].object;
 
-        while (clickedObject.parent && clickedObject.parent !== scene) {
-          clickedObject = clickedObject.parent;
-        }
+         while (clickedObject.parent && clickedObject.parent !== scene) {
+           clickedObject = clickedObject.parent;
+         }
 
-        selectedObject = clickedObject;
-        const objectId = selectedObject.userData.objectId;
+         selectedObject = clickedObject;
+         const objectId = selectedObject.userData.objectId;
 
-        if (objectId) {
-          console.log("Selected Object ID:", objectId);
-          showObjectDetails(objectId);
-        } else {
-          console.warn("No objectId found in userData");
-        }
+         if (objectId) {
+           console.log("Selected Object ID:", objectId);
+           showObjectDetails(objectId);
+         } else {
+           console.warn("No objectId found in userData");
+         }
       }
     }
 
@@ -437,6 +429,7 @@ const init = async () => {
     //   }
     // }
   });
+
 };
 
 const submitRoom = async () => {
@@ -475,10 +468,6 @@ const submitRoom = async () => {
   console.log("model_id value:", current_object.userData.objectId);
 
   try {
-    if (roomModels.length === 0) {
-      alert("No objects placed in the room!");
-      return;
-    }
     const { data, error } = await supabase
       .from("roommodels")
       .insert(roomModels)
@@ -486,7 +475,6 @@ const submitRoom = async () => {
     if (error) throw error;
     alert("Room saved successfully!");
     console.log("Room models saved:", data);
-    page("/gallery");
   } catch (error) {
     console.error("Error saving room models:", error);
     alert("Failed to save the room. Please try again.");
@@ -532,4 +520,3 @@ const isWebXRSupported = async () => {
 // initApp();
 
 init();
-

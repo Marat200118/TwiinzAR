@@ -15,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.46.1",
     "jquery": "^3.7.1",
+    "page": "^1.11.6",
     "three": "^0.170.0",
     "vercel": "^39.1.1"
   }

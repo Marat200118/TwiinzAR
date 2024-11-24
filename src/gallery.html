@@ -7,23 +7,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link type="text/css" rel="stylesheet" href="/style.css">
   <script src="https://launchar.app/sdk/v1?key=OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj&redirect=true"></script>
+  <script type="module" src="js/gallery.js"></script>
 </head>
 
 <body>
-  <div id="container">
-    <div class="main-page-content">
-      <h1>Welcome to Twiinz AR</h1>
-      <p>Click the button below to start AR</p>
-      <p>This is main page</p>
-    </div>
-    <button type="button" class="link-to-ar">
-      <a href="/ar.html">Start AR</a>
-    </button>
+  <div id="gallery-container">
+    <h1>Rooms Gallery</h1>
+    <div id="cards-container"></div>
   </div>
-
-  <!-- <div id="app">
-
-  </div> -->
   <script type="module" src="js/router.js"></script>
 </body>
 </html>
+
+<style>
+  #gallery-container {
+    color: white;
+  }
+</style>

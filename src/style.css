@@ -157,3 +157,7 @@ body {
 #info-container {
   display: block;
 }
+
+#app {
+  color: white;
+}
