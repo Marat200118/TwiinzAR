@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createRoomCard } from "./roomCard.js";
 import page from "page";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
@@ -37,17 +38,10 @@ const renderRooms = async () => {
   }
 
   rooms.forEach((room) => {
-    const card = document.createElement("div");
-    card.className = "room-card";
-
-    card.innerHTML = `
-      <h2>Room ID: ${room.id}</h2>
-      <p>Created at: ${new Date(room.created_at).toLocaleString()}</p>
-      <button class="view-room" data-room-id="${room.id}">View Room</button>
-    `;
-
+    const card = createRoomCard(room);
     container.appendChild(card);
   });
+
 
   // Add event listeners to "View Room" buttons
   document.querySelectorAll(".view-room").forEach((button) =>
