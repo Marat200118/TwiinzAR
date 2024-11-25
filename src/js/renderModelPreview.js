@@ -11,7 +11,7 @@ export const generateHighQualityPreview = async (
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-  camera.position.set(1.5, 1.5, 1.5);
+  camera.position.set(1.3, 1.3, 1.3);
   camera.lookAt(0, 0, 0);
 
   const light = new THREE.AmbientLight(0xffffff, 1);

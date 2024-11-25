@@ -54,7 +54,7 @@ const fetchModels = async () => {
     return;
   }
 
-  const sidenav = document.getElementById("mySidenav");
+  const sidenav = document.querySelector(".navigation-content");
   const categories = {};
 
   data.forEach((model) => {
@@ -78,8 +78,12 @@ const fetchModels = async () => {
       modelItem.className = "model-item";
       modelItem.id = `model-${model.id}`;
 
-      const modelName = document.createElement("span");
+      const modelName = document.createElement("p");
       modelName.textContent = model.name;
+
+      const modelCompany = document.createElement("p");
+      modelCompany.className = "company";
+      modelCompany.textContent = model.company;
 
       const previewContainer = document.createElement("div");
       previewContainer.id = `preview-${model.id}`;
@@ -89,6 +93,7 @@ const fetchModels = async () => {
 
       modelItem.appendChild(previewContainer);
       modelItem.appendChild(modelName);
+      modelItem.appendChild(modelCompany);
       categoryRow.appendChild(modelItem);
 
       sidenav.appendChild(categoryRow);
@@ -146,7 +151,6 @@ const showObjectDetails = async (objectId) => {
     return;
   }
 
-  // Update the popup with model details
   const popup = document.getElementById("popup");
   popup.innerHTML = `
     <h2>${data.name}</h2>
@@ -220,6 +224,7 @@ const arPlace = () => {
     selectedObject = placedObject;
 
     console.log("Object placed:", placedObject);
+    toggleSubmitButton();
   }
 };
 
@@ -284,6 +289,7 @@ const render = () => {
   renderer.render(scene, camera);
 };
 
+
 const createRoom = async () => {
   if (roomId) {
     console.warn("Room already created with ID:", roomId);
@@ -305,8 +311,21 @@ const createRoom = async () => {
   console.log("Room created with ID:", roomId);
 };
 
+const toggleSubmitButton = () => {
+  const submitButton = document.getElementById("submit-button");
+  const arSession = renderer.xr.isPresenting;
+
+  if (arSession && placedObjects.length > 0) {
+    console.log("Placed Objects Length:", placedObjects.length);
+    submitButton.style.display = "block";
+  } else {
+    submitButton.style.display = "none";
+  }
+};
+
 const init = async () => {
   container = document.createElement("div");
+
   document.getElementById("container").appendChild(container);
 
   scene = new THREE.Scene();
@@ -346,9 +365,9 @@ const init = async () => {
     requiredFeatures: ["hit-test"],
     optionalFeatures: ["dom-overlay"],
     domOverlay: { root: document.getElementById("content") },
+
   };
 
-  document.body.appendChild(ARButton.createButton(renderer, options));
 
   reticle = new THREE.Mesh(
     new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
@@ -359,7 +378,7 @@ const init = async () => {
   scene.add(reticle);
 
   window.addEventListener("resize", onWindowResize);
-  await createRoom();
+  // await createRoom();
   fetchModels();
 
   renderer.domElement.addEventListener("touchstart", (e) => {
@@ -418,25 +437,36 @@ const init = async () => {
         }
       }
     }
-
-    // if (intersects.length > 0) {
-    //   let clickedObject = intersects[0].object;
-
-    //   while (clickedObject.parent && clickedObject.parent !== scene) {
-    //     clickedObject = clickedObject.parent;
-    //   }
-
-    //   selectedObject = clickedObject;
-    //   const objectId = selectedObject.userData.objectId;
-
-    //   if (objectId) {
-    //     console.log("Selected Object ID:", objectId);
-    //     showObjectDetails(objectId);
-    //   } else {
-    //     console.warn("No objectId found in userData");
-    //   }
-    // }
   });
+
+  const arButton = ARButton.createButton(renderer, options);
+  document.querySelector(".buttons-container").appendChild(arButton);
+  arButton.classList.add("styled-ar-button");
+
+  arButton.addEventListener("click", () => {
+    if (arButton.textContent === "STOP AR") {
+      window.location.href = "/index.html";
+    }
+  });
+
+  if (renderer.xr) {
+    renderer.xr.addEventListener("sessionstart", () => {
+      console.log("XR session started.");
+      const submitButton = document.getElementById("submit-button");
+      arButton.classList.remove("styled-ar-button");
+      arButton.classList.add("stop-ar-button");
+
+      arButton.textContent = "STOP AR";
+
+      toggleSubmitButton();
+    });
+
+    renderer.xr.addEventListener("sessionend", toggleSubmitButton);
+  } else {
+    console.warn("WebXR not supported in this environment.");
+  }
+
+  toggleSubmitButton();
 };
 
 const submitRoom = async () => {
