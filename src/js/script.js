@@ -117,6 +117,27 @@ const fetchModels = async () => {
   }
 };
 
+// const fetchAndRenderPreviews = async () => {
+//   const { data: models, error } = await supabase.from("models").select("*");
+//   if (error) {
+//     console.error("Error fetching models:", error);
+//     return;
+//   }
+
+//   for (const model of models) {
+//     const previewUrl = await generateHighQualityPreview(model.glb_url);
+//     const container = document.getElementById(`preview-${model.id}`);
+//     if (container) {
+//       const img = document.createElement("img");
+//       img.src = previewUrl;
+//       img.style.width = "100%";
+//       img.style.height = "100%";
+//       container.innerHTML = "";
+//       container.appendChild(img);
+//     }
+//   }
+// };
+
 const fetchAndRenderPreviews = async () => {
   const { data: models, error } = await supabase.from("models").select("*");
   if (error) {
@@ -124,18 +145,18 @@ const fetchAndRenderPreviews = async () => {
     return;
   }
 
-  for (const model of models) {
-    const previewUrl = await generateHighQualityPreview(model.glb_url);
+  models.forEach((model) => {
     const container = document.getElementById(`preview-${model.id}`);
     if (container) {
       const img = document.createElement("img");
-      img.src = previewUrl;
+      img.src = model.model_image; // Use the image field from the database
+      img.alt = `${model.name} preview`; // Add an alt attribute for better accessibility
       img.style.width = "100%";
       img.style.height = "100%";
-      container.innerHTML = "";
-      container.appendChild(img);
+      container.innerHTML = ""; // Clear any existing content
+      container.appendChild(img); // Append the new image
     }
-  }
+  });
 };
 
 const showObjectDetails = async (objectId) => {
@@ -174,9 +195,16 @@ const loadModel = (url, id) => {
   const loader = new GLTFLoader();
   loader.load(
     url,
-    (glb) => {
-      current_object = glb.scene;
+    (gltf) => {
+      current_object = gltf.scene;
       current_object.userData.objectId = id;
+
+      const areaLightIntensity = 2;
+
+      const areaLight = new THREE.RectAreaLight(0xffffff, areaLightIntensity, 10, 10);
+      areaLight.position.set(0, 5, 0);
+      areaLight.lookAt(current_object.position);
+      current_object.add(areaLight);
 
       current_object.traverse((node) => {
         if (node.isMesh) {
@@ -378,7 +406,7 @@ const init = async () => {
   scene.add(reticle);
 
   window.addEventListener("resize", onWindowResize);
-  // await createRoom();
+  await createRoom();
   fetchModels();
 
   renderer.domElement.addEventListener("touchstart", (e) => {
@@ -535,32 +563,39 @@ const isWebXRSupported = async () => {
   }
 };
 
-// const initApp = async () => {
-//   const webxrSupported = await isWebXRSupported();
+const initApp = async () => {
+  const webxrSupported = await isWebXRSupported();
 
-//   if (webxrSupported) {
-//     console.log("WebXR is supported. Initializing WebXR.");
-//     init();
-//   } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
-//     console.log("WebXR not supported. Using LaunchXR for AR support.");
-//     // Initialize LaunchAR
-//     window.LAUNCHAR.initialize({
-//       key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
-//       redirect: true,
-//     }).then(() => {
-//       window.LAUNCHAR.on("arSessionStarted", () => {
-//         console.log("LaunchXR AR session started.");
-//         init();
-//       });
-//     });
-//   } else {
-//     console.log(
-//       "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
-//     ); // Use AR.js or another fallback
-//   }
-// };
+  // Check if the current page is "/ar.html"
+  if (webxrSupported && window.location.pathname === "/ar.html") {
+    console.log("WebXR is supported. Initializing WebXR.");
+    init();
+  } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
+    if (window.location.pathname === "/ar.html") {
+      console.log("WebXR not supported. Using LaunchXR for AR support.");
+      // Initialize LaunchAR only on /ar.html
+      window.LAUNCHAR.initialize({
+        key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
+        redirect: true,
+      }).then(() => {
+        window.LAUNCHAR.on("arSessionStarted", () => {
+          console.log("LaunchXR AR session started.");
+          init();
+        });
+      });
+    } else {
+      console.log(
+        "LaunchXR is not initialized because the page is not /ar.html."
+      );
+    }
+  } else {
+    console.log(
+      "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
+    ); // Use AR.js or another fallback
+  }
+};
 
-// initApp();
+initApp();
 
-init();
+// init();
 

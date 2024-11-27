@@ -13,6 +13,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "src/index.html"),
         ar: resolve(__dirname, "src/ar.html"),
+        gallery: resolve(__dirname, "src/gallery.html"),
+        room: resolve(__dirname, "src/room.html"),
       },
     },
   },
