@@ -30,7 +30,9 @@ const toggleNav = () => {
   const navToggle = document.getElementById("nav-toggle");
   const isOpen = sidenav.classList.toggle("open");
 
-  navToggle.textContent = isOpen ? "×" : "☰";
+  navToggle.innerHTML = isOpen
+    ? '<ion-icon name="close"></ion-icon>'
+    : "<ion-icon name='menu'></ion-icon>";
 };
 
 document.getElementById("nav-toggle").addEventListener("click", toggleNav);
@@ -70,7 +72,6 @@ const fetchModels = async () => {
 
     const categoryLabel = document.createElement("h3");
     categoryLabel.textContent = category;
-    // categoryLabel.style.color = "#fff";
     sidenav.appendChild(categoryLabel);
 
     models.forEach((model) => {
@@ -79,6 +80,7 @@ const fetchModels = async () => {
       modelItem.id = `model-${model.id}`;
 
       const modelName = document.createElement("p");
+      modelName.className = "name";
       modelName.textContent = model.name;
 
       const modelCompany = document.createElement("p");
@@ -406,7 +408,7 @@ const init = async () => {
   scene.add(reticle);
 
   window.addEventListener("resize", onWindowResize);
-  await createRoom();
+  // await createRoom();
   fetchModels();
 
   renderer.domElement.addEventListener("touchstart", (e) => {
