@@ -147,18 +147,47 @@ const fetchAndRenderPreviews = async () => {
     return;
   }
 
+  // models.forEach((model) => {
+  //   const container = document.getElementById(`preview-${model.id}`);
+  //   if (container) {
+  //     const img = document.createElement("img");
+  //     img.src = model.model_image;
+  //     img.alt = `${model.name} preview`;
+  //     img.style.width = "100%";
+  //     img.style.height = "100%";
+  //     container.innerHTML = ""; 
+  //     container.appendChild(img); 
+  //   }
+  // });
   models.forEach((model) => {
     const container = document.getElementById(`preview-${model.id}`);
     if (container) {
+      const picture = document.createElement("picture");
+
+      // Add multiple sources for responsive images
+      const sourceWebP = document.createElement("source");
+      sourceWebP.srcset = model.model_image.replace(".jpg", ".webp");
+      sourceWebP.type = "image/webp";
+
+      const sourceJpg = document.createElement("source");
+      sourceJpg.srcset = model.model_image;
+      sourceJpg.type = "image/jpeg";
+
       const img = document.createElement("img");
-      img.src = model.model_image; // Use the image field from the database
-      img.alt = `${model.name} preview`; // Add an alt attribute for better accessibility
+      img.src = model.model_image; // Fallback image
+      img.alt = `${model.name} preview`;
       img.style.width = "100%";
       img.style.height = "100%";
-      container.innerHTML = ""; // Clear any existing content
-      container.appendChild(img); // Append the new image
+
+      picture.appendChild(sourceWebP);
+      picture.appendChild(sourceJpg);
+      picture.appendChild(img);
+
+      container.innerHTML = "";
+      container.appendChild(picture);
     }
   });
+  
 };
 
 const showObjectDetails = async (objectId) => {
@@ -179,7 +208,7 @@ const showObjectDetails = async (objectId) => {
     <h2>${data.name}</h2>
     <p>${data.description}</p>
   `;
-  popup.style.display = "block"; // Make it visible
+  popup.style.display = "block";
   popup.style.zIndex = "1000";
 
   popup.addEventListener("click", () => {
@@ -227,7 +256,7 @@ const arPlace = () => {
   if (reticle.visible && current_object) {
     const placedObject = current_object.clone();
     placedObject.position.setFromMatrixPosition(reticle.matrix);
-    placedObject.rotation.copy(reticle.rotation); // Ensure rotation is set
+    placedObject.rotation.copy(reticle.rotation);
     placedObject.scale.copy(current_object.scale);
     placedObject.visible = true;
     console.log(
