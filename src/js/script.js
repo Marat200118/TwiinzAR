@@ -164,7 +164,6 @@ const fetchAndRenderPreviews = async () => {
     if (container) {
       const picture = document.createElement("picture");
 
-      // Add multiple sources for responsive images
       const sourceWebP = document.createElement("source");
       sourceWebP.srcset = model.model_image.replace(".jpg", ".webp");
       sourceWebP.type = "image/webp";
@@ -174,7 +173,7 @@ const fetchAndRenderPreviews = async () => {
       sourceJpg.type = "image/jpeg";
 
       const img = document.createElement("img");
-      img.src = model.model_image; // Fallback image
+      img.src = model.model_image;
       img.alt = `${model.name} preview`;
       img.style.width = "100%";
       img.style.height = "100%";
@@ -190,6 +189,7 @@ const fetchAndRenderPreviews = async () => {
   
 };
 
+
 const showObjectDetails = async (objectId) => {
   const { data, error } = await supabase
     .from("models")
@@ -203,17 +203,54 @@ const showObjectDetails = async (objectId) => {
     return;
   }
 
+  const sustainabilityIcons = `
+    <ion-icon name="leaf-outline"></ion-icon>
+    <ion-icon name="refresh-outline"></ion-icon>
+    <ion-icon name="earth-outline"></ion-icon>
+    <ion-icon name="flash-outline"></ion-icon>
+  `;
+
   const popup = document.getElementById("popup");
   popup.innerHTML = `
-    <h2>${data.name}</h2>
-    <p>${data.description}</p>
+    <div class="popup-header">
+      <div class="header-heading">
+        <h2 class="popup-title">${data.name}</h2>
+        <p class="popup-company">${data.company}</p>
+      </div>
+      <button class="popup-close" onclick="document.getElementById('popup').style.display='none'">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="popup-sections">
+      <div class="popup-section">
+        <h3>Description</h3>
+        <p class="popup-section-p">${data.description}</p>
+      </div>
+      <div class="popup-section">
+        <h3>Sustainability</h3>
+        <div class="sustainability-icons">${sustainabilityIcons}</div>
+        <p class="popup-section-p">${
+          data.sustainability_info || "Sustainability information not available."
+        }</p>
+      </div>
+      <button class="popup-delete" onclick="deleteModel(${objectId})">
+        <ion-icon name="trash-outline"></ion-icon>
+      </button>
+    </div>
   `;
   popup.style.display = "block";
-  popup.style.zIndex = "1000";
+};
 
-  popup.addEventListener("click", () => {
-    popup.style.display = "none";
-  });
+const deleteModel = (objectId) => {
+  const objectToRemove = placedObjects.find((obj) => obj.modelId === objectId);
+  if (objectToRemove) {
+    scene.remove(objectToRemove.mesh);
+    placedObjects = placedObjects.filter((obj) => obj.modelId !== objectId);
+    alert("Model removed from the scene!");
+    document.getElementById("popup").style.display = "none";
+  } else {
+    alert("Model not found in the scene!");
+  }
 };
 
 const loadModel = (url, id) => {
@@ -298,6 +335,8 @@ const onWindowResize = () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 };
+
+// showObjectDetails(1);
 
 const animate = (timestamp, frame) => {
   if (frame) {

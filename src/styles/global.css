@@ -1,3 +1,8 @@
+:root {
+  --creamy-white: #F4F8E1;
+  --black: #484848;
+}
+
 body {
   background-color: #F5F5F5;
   color: #484848;
@@ -5,11 +10,11 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-family: "Palanquin Dark", sans-serif;
+  font-family: "Quicksand", sans-serif;
 }
 
 h3 {
-  font-size: 1.375;
+  font-size: 1.375rem;
 }
 
 p {
@@ -17,12 +22,12 @@ p {
 }
 
 ion-icon {
-  background-color: #E34D28 !important;
+  /* background-color: #E34D28 !important; */
   border-radius: 50%;
   padding: .3rem;
   width: 2.3rem;
   height: 2.3rem;
-  color: #CBFA56;
+  color: var(--black);
 }
 
 .sidenav {
@@ -200,15 +205,109 @@ p.company {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 18rem;
-  height: auto;
-  border-radius: 1rem;
-  color: black;
-  background-color: #f1f1f1;
-  padding: 20px;
-  border: 1px solid black;
-  z-index: 1;
+  width: 90%;
+  max-width: 400px;
+  background-color: var(--creamy-white);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 1.5rem;
+  overflow: hidden;
 }
+
+.popup-section-p {
+  font-weight: 300;
+}
+
+.popup-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+}
+
+
+.popup-title {
+  font-size: 2rem;
+  color: #ff5733;
+  margin: 0;
+}
+
+.popup-company {
+  font-size: 1.2rem;
+  font-family: "Quicksand", sans-serif;
+  font-weight: 500;
+  color: var(--black);
+  margin: 0;
+}
+
+.popup-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+}
+
+.popup-close ion-icon {
+  color: var(--black) !important;
+}
+
+.popup-section {
+  margin-top: 16px;
+}
+
+.popup-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--black);
+  padding: .7rem;
+  border-radius: 1rem;
+  background-color: #CBFA56;
+  margin: 0 0 8px;
+}
+
+.sustainability-icons {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.sustainability-icons ion-icon {
+  font-size: 1.5rem;
+  color: #ff9800;
+}
+
+.popup-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: .5rem;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.popup-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.popup-delete ion-icon {
+  /* margin-right: 8px; */
+  color: #fff;
+  font-size: 1.2rem;
+  padding: auto;
+}
+
 
 .preview-container {
   
