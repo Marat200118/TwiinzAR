@@ -12,18 +12,24 @@
 
 
   <link type="text/css" rel="stylesheet" href="/styles/global.css">
-  <!-- <script src="https://launchar.app/sdk/v1?key=OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj&redirect=true"></script> -->
 </head>
 
 <body>
   <header>
-    <img src="/TwiinzLogoOrange.svg" alt="Twiinz Logo" class="logo">
+    <img src="assets/TwiinzLogoOrange.svg" alt="Twiinz Logo" class="logo">
   </header>
   <div id="container">
     <div class="main-page-content">
-      <h1>Welcome to Twiinz AR</h1>
-      <p>Click the button below to start AR</p>
-      <p>This is main page</p>
+      <h1>Dream it, AR do it!</h1>
+      <p>Discover, experiment and play with materials, colours and shapes in the world of Twiinz.</p>
+      <p class="highlight">Now in augmented reality!</p>
+     <img src="assets/video.png" alt="video" class="video">
+     <div class="how-to">
+      <h2>How it works:</h2>
+      <p>1. Click the button below to start the AR experience</p>
+      <p>2. Point your camera at a flat surface</p>
+      <p>3. Tap the screen to place the object</p>
+      <p>4. Move around the object to view it from different angles</p>
     </div>
     <button type="button" class="link-to-ar">
       <a href="/ar.html">Start AR</a>
@@ -36,6 +42,51 @@
 
 <style>
   .logo {
-    max-width: 15rem;
+    max-width: 8rem;
   }
+
+  .how-to {
+    margin-top: 4rem;
+  }
+
+  .highlight {
+    color: #A3B0FF;
+    font-family: "Quicksand", sans-serif;
+    font-size: 1.5rem;
+    margin-top: .2rem;
+  }
+
+  .main-page-content {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    /* gap: 1rem; */
+  }
+
+  .link-to-ar {
+    position: fixed;
+    bottom: 2rem;
+    left: calc(50% - 50px);
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .link-to-ar img.button-icon {
+    margin-left: 10px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .link-to-ar a {
+    color: #fff;
+    text-decoration: none;
+  }
+
 </style>
