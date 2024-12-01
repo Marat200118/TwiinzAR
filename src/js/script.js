@@ -650,7 +650,7 @@ const init = async () => {
       arButton.textContent = "STOP AR";
 
       toggleSubmitButton();
-      // createRoom();
+      createRoom();
     });
 
     renderer.xr.addEventListener("sessionend", toggleSubmitButton);
