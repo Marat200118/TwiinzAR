@@ -12,6 +12,30 @@ const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+
+// let supabase;
+
+// const fetchSupabaseCredentials = async () => {
+//   const response = await fetch("../api/supabase-credentials");
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch Supabase credentials.");
+//   }
+//   return await response.json();
+// };
+
+
+// const initializeSupabase = async () => {
+//   try {
+//     const { SUPABASE_URL, SUPABASE_KEY } = await fetchSupabaseCredentials();
+//     supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+//     console.log("Supabase initialized successfully.");
+//     fetchModels();
+//   } catch (error) {
+//     console.error("Error initializing Supabase:", error);
+//     alert("Failed to initialize Supabase. Please try again.");
+//   }
+// };
+
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
@@ -48,6 +72,7 @@ $("#place-button").click(() => {
 });
 
 const fetchModels = async () => {
+
   const { data, error } = await supabase.from("models").select("*");
 
   if (error) {
@@ -289,6 +314,29 @@ const loadModel = (url, id) => {
   );
 };
 
+const animateReticleOnPlace = () => {
+  const originalScale = reticle.scale.clone();
+  const targetScale = originalScale.clone().multiplyScalar(1.5);
+  const duration = 500; 
+
+  const startTime = performance.now();
+
+  const animate = (time) => {
+    const elapsedTime = time - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+
+    reticle.scale.lerpVectors(originalScale, targetScale, progress);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      reticle.scale.copy(originalScale);
+    }
+  };
+
+  requestAnimationFrame(animate);
+};
+
 const arPlace = () => {
   if (reticle.visible && current_object) {
     const placedObject = current_object.clone();
@@ -318,6 +366,8 @@ const arPlace = () => {
     });
 
     selectedObject = placedObject;
+
+    animateReticleOnPlace();
 
     console.log("Object placed:", placedObject);
     toggleSubmitButton();
@@ -421,6 +471,7 @@ const toggleSubmitButton = () => {
   }
 };
 
+
 const init = async () => {
   container = document.createElement("div");
 
@@ -466,18 +517,60 @@ const init = async () => {
 
   };
 
+  const createGradientTexture = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+
+    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    gradient.addColorStop(0, "#BA543B");
+    gradient.addColorStop(0.5, "#F19F40");
+    gradient.addColorStop(1, "#D98A71");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+  };
+
+
 
   reticle = new THREE.Mesh(
-    new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial()
+    new THREE.RingGeometry(0.1, 0.12, 64, 1).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      map: createGradientTexture(),
+      opacity: 1,
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
   );
+
+  const centerDot = new THREE.Mesh(
+    new THREE.CircleGeometry(0.015, 32),
+    new THREE.MeshBasicMaterial({
+      map: createGradientTexture(),
+      opacity: 1,
+      transparent: true,
+    })
+  );
+  centerDot.rotateX(-Math.PI / 2);
+  reticle.add(centerDot); 
+
   reticle.matrixAutoUpdate = false;
   reticle.visible = false;
   scene.add(reticle);
 
+
   window.addEventListener("resize", onWindowResize);
   // await createRoom();
-  fetchModels();
+  // initializeSupabase().then((client) => {
+  //   supabase = client;
+
+    fetchModels();
+  // });
+
 
   renderer.domElement.addEventListener("touchstart", (e) => {
     e.preventDefault();
@@ -634,6 +727,7 @@ const isWebXRSupported = async () => {
 };
 
 const initApp = async () => {
+  // await initializeSupabase();
   const webxrSupported = await isWebXRSupported();
 
   // Check if the current page is "/ar.html"

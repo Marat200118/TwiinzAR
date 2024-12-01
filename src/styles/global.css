@@ -345,7 +345,7 @@ p.company {
 }
 
 #ARButton.styled-ar-button::before {
-  content: url("/ar-icon.svg");
+  content: url("/assets/ar-icon.svg");
   color: #fff !important;
   width: 2rem;
 }
@@ -397,7 +397,7 @@ p.company {
 
 
 #ARButton.stop-ar-button::before {
-  content: url("/ar-icon.svg");
+  content: url("/assets/ar-icon.svg");
   color: #fff !important;
   width: 2rem;
 }
