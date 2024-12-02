@@ -53,6 +53,7 @@ const toggleNav = () => {
   const sidenav = document.getElementById("mySidenav");
   const navToggle = document.getElementById("nav-toggle");
   const isOpen = sidenav.classList.toggle("open");
+  // navToggle.style.display = "none";
 
   navToggle.innerHTML = isOpen
     ? '<ion-icon name="close"></ion-icon>'
@@ -258,12 +259,17 @@ const showObjectDetails = async (objectId) => {
           data.sustainability_info || "Sustainability information not available."
         }</p>
       </div>
-      <button class="popup-delete" onclick="deleteModel(${objectId})">
+      <button class="popup-delete">
         <ion-icon name="trash-outline"></ion-icon>
       </button>
     </div>
   `;
   popup.style.display = "block";
+
+
+  document.querySelector(".popup-delete").addEventListener("click", () => {
+    deleteModel(objectId);
+  });
 };
 
 const deleteModel = (objectId) => {
@@ -271,7 +277,7 @@ const deleteModel = (objectId) => {
   if (objectToRemove) {
     scene.remove(objectToRemove.mesh);
     placedObjects = placedObjects.filter((obj) => obj.modelId !== objectId);
-    alert("Model removed from the scene!");
+    // alert("Model removed from the scene!");
     document.getElementById("popup").style.display = "none";
   } else {
     alert("Model not found in the scene!");
@@ -348,6 +354,8 @@ const arPlace = () => {
       "current_object user data id",
       current_object.userData.objectId
     );
+
+    placedObject.userData.objectId = current_object.userData.objectId;
 
     placedObject.traverse((node) => {
       if (node.isMesh) {
@@ -473,6 +481,9 @@ const toggleSubmitButton = () => {
 
 
 const init = async () => {
+
+
+
   container = document.createElement("div");
 
   document.getElementById("container").appendChild(container);
@@ -564,12 +575,8 @@ const init = async () => {
 
 
   window.addEventListener("resize", onWindowResize);
-  // await createRoom();
-  // initializeSupabase().then((client) => {
-  //   supabase = client;
+  fetchModels();
 
-    fetchModels();
-  // });
 
 
   renderer.domElement.addEventListener("touchstart", (e) => {
@@ -634,26 +641,46 @@ const init = async () => {
   document.querySelector(".buttons-container").appendChild(arButton);
   arButton.classList.add("styled-ar-button");
 
+  setTimeout(() => {
+    if (arButton.textContent === "START AR") {
+      arButton.textContent = "START EXPERIENCE";
+    }
+  }, 100);
+
   arButton.addEventListener("click", () => {
     if (arButton.textContent === "STOP AR") {
+      arButton.textContent = "Stop Experience";
       window.location.href = "/index.html";
     }
   });
 
+  const onboardingVideo = document.querySelector(".onboarding-video");
+  const navToggle = document.getElementById("nav-toggle");
+
   if (renderer.xr) {
     renderer.xr.addEventListener("sessionstart", () => {
-      console.log("XR session started.");
-      const submitButton = document.getElementById("submit-button");
+      console.log("AR session started.");
+      // const submitButton = document.getElementById("submit-button");
+
       arButton.classList.remove("styled-ar-button");
       arButton.classList.add("stop-ar-button");
 
-      arButton.textContent = "STOP AR";
+      onboardingVideo.style.display = "none";
+      navToggle.style.display = "block";
+
+      arButton.textContent = "End AR Experience";
 
       toggleSubmitButton();
       createRoom();
     });
 
-    renderer.xr.addEventListener("sessionend", toggleSubmitButton);
+    renderer.xr.addEventListener("sessionend", () => {
+      console.log("AR session ended.");
+      onboardingVideo.style.display = "block";
+      arButton.textContent = "Start AR Experience";
+      toggleSubmitButton();
+    });
+
   } else {
     console.warn("WebXR not supported in this environment.");
   }

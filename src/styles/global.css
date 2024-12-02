@@ -51,11 +51,16 @@ ion-icon {
 
 #nav-toggle {
   font-size: 30px;
+  display: none;
   position: absolute;
   z-index: 2;
   top: 2rem;
   left: 2rem;
   cursor: pointer;
+}
+
+#nav-toggle ion-icon {
+  color: orange;
 }
 
 .model-item img {
@@ -197,7 +202,8 @@ p.company {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
+  width: 80%;
+  height: 50vh;
   max-width: 400px;
   background-color: var(--creamy-white);
   border-radius: 12px;
@@ -205,6 +211,7 @@ p.company {
   z-index: 1000;
   padding: 1.5rem;
   overflow: hidden;
+  overflow-y: auto;
 }
 
 .popup-section-p {
