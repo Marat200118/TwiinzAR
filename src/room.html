@@ -16,19 +16,123 @@
 
 <body>
   <div class="room-container">
-    <div class="room-content">
+    <div class="room-header">
       <h1>Room Viewer</h1>
-      <p>Click the button below to view the room in AR</p>
-      <p>This is the room page</p>
+      <p>Explore the room details below and enter AR mode to view it.</p>
+    </div>
+    <div class="room-content">
+      <div class="room-details">
+        <h2 id="room-name">Room Name</h2>
+        <p id="author-name">By Author</p>
+        <img id="room-image" src="" alt="Room Image" />
+      </div>
+      <div class="models-info"></div>
+
     </div>
   </div>
   <script type="module" src="/js/viewRoom.js"></script>
 </body>
+
 
 </html>
 
 <style>
   canvas {
     display: none !important;
+  }
+  body {
+    font-family: 'Manrope', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+
+  .room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .room-header {
+    text-align: center;
+  }
+
+  .room-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+  }
+
+  .room-header p {
+    font-size: 1.2em;
+    color: #666;
+  }
+
+  .room-content {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .room-details {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .room-details h2 {
+    font-size: 1.8em;
+    margin: 5px 0;
+  }
+
+  .room-details img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+
+  .models-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .model-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    width: 250px;
+    text-align: center;
+  }
+
+  .model-card h3 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+
+  .model-card img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+
+  .styled-ar-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    color: #fff;
+    background-color: #0078ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .styled-ar-button:hover {
+    background-color: #005bb5;
   }
 </style>

@@ -32,7 +32,8 @@
       <p>4. Move around the object to view it from different angles</p>
     </div>
     <button type="button" class="link-to-ar">
-      <a href="/ar.html">Start AR</a>
+      <img src="assets/ar-icon-white.svg" alt="AR icon" class="button-icon">
+      <a href="/ar.html">START EXPERIENCE</a>
     </button>
   </div>
 
@@ -56,6 +57,11 @@
     margin-top: .2rem;
   }
 
+  .video {
+    width: clamp(20rem, 100%, 40rem);
+    margin-top: 2rem;
+  }
+
   .main-page-content {
     margin-top: 2rem;
     display: flex;
@@ -64,29 +70,41 @@
   }
 
   .link-to-ar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
     position: fixed;
     bottom: 2rem;
-    left: calc(50% - 50px);
-    padding: 10px 20px;
-    background-color: #007bff;
+    left: calc(50% - 100px);
+    padding: 12px 6px;
+    background-color: #A3B0FF;
     border: none;
-    border-radius: 5px;
+    border-radius: 1rem;
     color: white;
-    font-size: 16px;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
+    height: 3.5rem;
+    min-width: 12rem !important;
+    max-width: 15rem !important;
   }
 
   .link-to-ar img.button-icon {
-    margin-left: 10px;
-    width: 20px;
-    height: 20px;
+    width: 2rem;
   }
 
+
+
   .link-to-ar a {
+    font-size: 13px;
     color: #fff;
     text-decoration: none;
+  }
+
+  @media screen and (min-width: 1024px) {
+    .link-to-ar {
+      display: none;
+    }
   }
 
 </style>

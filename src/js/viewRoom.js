@@ -14,32 +14,60 @@ let modelsData = [];
 let modelsToPlace = [];
 let roomId;
 
-const fetchModelsInfo = async (modelsInfoContainer) => {
+
+const fetchRoomDetails = async () => {
+  try {
+    const { data: room, error } = await supabase
+      .from("rooms")
+      .select("name, author_name, room_image")
+      .eq("id", roomId)
+      .single();
+
+    if (error) throw error;
+
+    document.getElementById("room-name").textContent = room.name;
+    document.getElementById(
+      "author-name"
+    ).textContent = `By ${room.author_name}`;
+    document.getElementById("room-image").src =
+      room.room_image || "/default-room.jpg";
+  } catch (error) {
+    console.error("Failed to fetch room details:", error);
+    document.querySelector(".room-details").innerHTML =
+      "<p>Failed to load room details.</p>";
+  }
+};
+
+
+const fetchModelsInfo = async () => {
+  const modelsInfoContainer = document.querySelector(".models-info");
+
   try {
     const { data: models, error } = await supabase
       .from("roommodels")
-      .select("model_id, models (name, description)")
+      .select("model_id, models (name, description, model_image, company)")
       .eq("room_id", roomId);
 
     if (error) throw error;
 
-    if (models.length === 0) {
-      modelsInfoContainer.innerHTML = "<p>No models used in this room.</p>";
+    if (!models.length) {
+      modelsInfoContainer.innerHTML = "<p>No models in this room.</p>";
       return;
     }
 
-    models.forEach((modelData) => {
-      const { name, description } = modelData.models;
-
-      const modelCard = document.createElement("div");
-      modelCard.className = "model-card";
-      modelCard.innerHTML = `
+    models.forEach(
+      ({ models: { name, description, model_image, company } }) => {
+        const modelCard = document.createElement("div");
+        modelCard.className = "model-card";
+        modelCard.innerHTML = `
         <h3>${name}</h3>
         <p>${description}</p>
+        <p>Company: ${company}</p>
+        <img src="${model_image}" alt="${name}" />
       `;
-
-      modelsInfoContainer.appendChild(modelCard);
-    });
+        modelsInfoContainer.appendChild(modelCard);
+      }
+    );
   } catch (error) {
     console.error("Failed to fetch model information:", error);
     modelsInfoContainer.innerHTML = "<p>Failed to load model information.</p>";
@@ -60,7 +88,7 @@ const init = async (id) => {
     roomContent.appendChild(modelsInfo);
 
     // Fetch and display models info
-    await fetchModelsInfo(modelsInfo);
+    // await fetchModelsInfo(modelsInfo);
   };
 
   roomContentInformation();
@@ -96,6 +124,13 @@ const init = async (id) => {
     domOverlay: { root: document.body },
   });
   document.body.appendChild(arButton);
+  arButton.classList.add("styled-ar-button");
+
+  setTimeout(() => {
+    if (arButton.textContent === "START AR") {
+      arButton.textContent = "START EXPERIENCE";
+    }
+  }, 100);
 
   reticle = new THREE.Mesh(
     new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
@@ -105,7 +140,8 @@ const init = async (id) => {
   reticle.visible = false;
   scene.add(reticle);
 
-  await fetchModels();
+  //  await fetchRoomDetails();
+   await fetchModelsInfo();
 
   renderer.setAnimationLoop(animate);
 

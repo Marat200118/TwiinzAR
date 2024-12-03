@@ -330,16 +330,18 @@ p.company {
 } */
 
 #ARButton.styled-ar-button {
-  background-color: #b0d1f4 !important;
-  color: #000 !important;
+  background-color: #A3B0FF  !important;
+  position: fixed !important;
+  color: #fff !important;
   font-size: 16px;
   font-weight: bold;
   border: none !important;
   opacity: 1 !important;
   z-index: 0 !important;
   border-radius: 1rem !important;
-  height: 3rem !important;
-  left: auto !important;
+  /* height: 3rem !important; */
+  height: 3.5rem !important;
+  left: calc(50% - 100px) !important;
   min-width: 12rem !important;
   max-width: 15rem !important;
   padding: 10px 20px;
@@ -352,7 +354,7 @@ p.company {
 }
 
 #ARButton.styled-ar-button::before {
-  content: url("/assets/ar-icon.svg");
+  content: url("/assets/ar-icon-white.svg");
   color: #fff !important;
   width: 2rem;
 }
@@ -360,8 +362,7 @@ p.company {
 #ARButton.stop-ar-button {
   background-color: #f29a9a !important;
   color: #000 !important;
-  font-size: 16px;
-  font-weight: bold;
+  font: 1rem !important;
   border: none !important;
   opacity: 1 !important;
   z-index: 0 !important;
@@ -412,10 +413,6 @@ p.company {
 #ARButton {
   transition: all 0.5s ease-in-out;
 }
-
-
-
-
 
 .room-card {
   border: 1px solid #ddd;

@@ -145,26 +145,6 @@ const fetchModels = async () => {
   }
 };
 
-// const fetchAndRenderPreviews = async () => {
-//   const { data: models, error } = await supabase.from("models").select("*");
-//   if (error) {
-//     console.error("Error fetching models:", error);
-//     return;
-//   }
-
-//   for (const model of models) {
-//     const previewUrl = await generateHighQualityPreview(model.glb_url);
-//     const container = document.getElementById(`preview-${model.id}`);
-//     if (container) {
-//       const img = document.createElement("img");
-//       img.src = previewUrl;
-//       img.style.width = "100%";
-//       img.style.height = "100%";
-//       container.innerHTML = "";
-//       container.appendChild(img);
-//     }
-//   }
-// };
 
 const fetchAndRenderPreviews = async () => {
   const { data: models, error } = await supabase.from("models").select("*");
@@ -173,18 +153,6 @@ const fetchAndRenderPreviews = async () => {
     return;
   }
 
-  // models.forEach((model) => {
-  //   const container = document.getElementById(`preview-${model.id}`);
-  //   if (container) {
-  //     const img = document.createElement("img");
-  //     img.src = model.model_image;
-  //     img.alt = `${model.name} preview`;
-  //     img.style.width = "100%";
-  //     img.style.height = "100%";
-  //     container.innerHTML = ""; 
-  //     container.appendChild(img); 
-  //   }
-  // });
   models.forEach((model) => {
     const container = document.getElementById(`preview-${model.id}`);
     if (container) {
@@ -754,17 +722,17 @@ const isWebXRSupported = async () => {
 };
 
 const initApp = async () => {
-  // await initializeSupabase();
+
   const webxrSupported = await isWebXRSupported();
 
-  // Check if the current page is "/ar.html"
+  
   if (webxrSupported && window.location.pathname === "/ar.html") {
     console.log("WebXR is supported. Initializing WebXR.");
     init();
   } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
     if (window.location.pathname === "/ar.html") {
       console.log("WebXR not supported. Using LaunchXR for AR support.");
-      // Initialize LaunchAR only on /ar.html
+     
       window.LAUNCHAR.initialize({
         key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
         redirect: true,
@@ -782,11 +750,10 @@ const initApp = async () => {
   } else {
     console.log(
       "Neither WebXR nor LaunchXR is supported. Using AR.js as fallback."
-    ); // Use AR.js or another fallback
+    );
   }
 };
 
 initApp();
 
-// init();
 
