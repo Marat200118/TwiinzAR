@@ -7,7 +7,6 @@ const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Function to fetch rooms from the database
 const fetchRooms = async () => {
   try {
     const { data: rooms, error } = await supabase.from("rooms").select("*");
@@ -26,11 +25,10 @@ const fetchRooms = async () => {
   }
 };
 
-// Function to render rooms as cards
 const renderRooms = async () => {
   const rooms = await fetchRooms();
   const container = document.getElementById("cards-container");
-  container.innerHTML = ""; // Clear existing cards
+  container.innerHTML = ""; 
 
   if (rooms.length === 0) {
     container.innerHTML = "<p>No rooms available yet.</p>";
@@ -43,7 +41,6 @@ const renderRooms = async () => {
   });
 
 
-  // Add event listeners to "View Room" buttons
   document.querySelectorAll(".view-room").forEach((button) =>
     button.addEventListener("click", (e) => {
       const roomId = e.target.getAttribute("data-room-id");
@@ -52,11 +49,9 @@ const renderRooms = async () => {
   );
 };
 
-// Function to handle viewing a room
 const viewRoom = (roomId) => {
   page(`/rooms/${roomId}`);
 
 };
 
-// Initialize the gallery
 document.addEventListener("DOMContentLoaded", renderRooms);

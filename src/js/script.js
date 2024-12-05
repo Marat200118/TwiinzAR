@@ -6,6 +6,8 @@ import $ from "jquery";
 import { createClient } from "@supabase/supabase-js";
 import { generateHighQualityPreview } from "./renderModelPreview";
 import page from "page";
+import { v4 as uuidv4 } from "uuid";
+import { initPopup, togglePopupButtonVisibility } from "./popup.js";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
@@ -38,6 +40,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
+const cleanupTimeout = 180000; 
 
 let container;
 let camera, scene, renderer;
@@ -48,17 +51,24 @@ let hitTestSource = null;
 let hitTestSourceRequested = false;
 let touchDown, touchX, touchY, deltaX, deltaY;
 let roomId = null;
+let currentIndex = 0;
+let initialPinchDistance = null;
+let pinchScaling = false;
+let isRotating = false;
+let lastTouchX = null;
 
 const toggleNav = () => {
   const sidenav = document.getElementById("mySidenav");
   const navToggle = document.getElementById("nav-toggle");
   const isOpen = sidenav.classList.toggle("open");
+  // sidenav.classList.add("open");
   // navToggle.style.display = "none";
 
   navToggle.innerHTML = isOpen
     ? '<ion-icon name="close"></ion-icon>'
     : "<ion-icon name='menu'></ion-icon>";
 };
+
 
 document.getElementById("nav-toggle").addEventListener("click", toggleNav);
 
@@ -140,6 +150,8 @@ const fetchModels = async () => {
         }
 
         loadModel(model.glb_url, model.id);
+
+        toggleNav();
       });
     });
   }
@@ -183,70 +195,82 @@ const fetchAndRenderPreviews = async () => {
   
 };
 
-
-const showObjectDetails = async (objectId) => {
-  const { data, error } = await supabase
-    .from("models")
-    .select("*")
-    .eq("id", objectId)
-    .single();
-
-  if (error) {
-    console.error("Error fetching object details:", error);
-    alert("Failed to fetch object details.");
-    return;
-  }
-
-  const sustainabilityIcons = `
-    <ion-icon name="leaf-outline"></ion-icon>
-    <ion-icon name="refresh-outline"></ion-icon>
-    <ion-icon name="earth-outline"></ion-icon>
-    <ion-icon name="flash-outline"></ion-icon>
-  `;
-
-  const popup = document.getElementById("popup");
-  popup.innerHTML = `
-    <div class="popup-header">
-      <div class="header-heading">
-        <h2 class="popup-title">${data.name}</h2>
-        <p class="popup-company">${data.company}</p>
-      </div>
-      <button class="popup-close" onclick="document.getElementById('popup').style.display='none'">
-        <ion-icon name="close-outline"></ion-icon>
-      </button>
-    </div>
-    <div class="popup-sections">
-      <div class="popup-section">
-        <h3>Description</h3>
-        <p class="popup-section-p">${data.description}</p>
-      </div>
-      <div class="popup-section">
-        <h3>Sustainability</h3>
-        <div class="sustainability-icons">${sustainabilityIcons}</div>
-        <p class="popup-section-p">${
-          data.sustainability_info || "Sustainability information not available."
-        }</p>
-      </div>
-      <button class="popup-delete">
-        <ion-icon name="trash-outline"></ion-icon>
-      </button>
+const createConfirmationDialog = (container) => {
+  const dialog = document.createElement("div");
+  dialog.id = "confirmation-dialog";
+  dialog.style.borderRadius = "8px";
+  dialog.style.display = "none";
+  dialog.style.zIndex = "1000";
+  dialog.style.textAlign = "center";
+  dialog.innerHTML = `
+    <p>Are you sure you want to delete this model?</p>
+    <div>
+      <button id="confirm-delete" style="margin: 10px; padding: 8px 16px;">Delete</button>
+      <button id="cancel-delete" style="margin: 10px; padding: 8px 16px;">Cancel</button>
     </div>
   `;
-  popup.style.display = "block";
+  container.appendChild(dialog);
 
+  // Defer adding event listeners until the elements are guaranteed to exist
+  dialog.querySelector("#cancel-delete").addEventListener("click", () => {
+    dialog.style.display = "none";
+  });
 
-  document.querySelector(".popup-delete").addEventListener("click", () => {
-    deleteModel(objectId);
+  dialog.querySelector("#confirm-delete").addEventListener("click", () => {
+    console.warn(
+      "Confirm delete button clicked, but no uniqueId provided yet."
+    );
+    dialog.style.display = "none";
   });
 };
 
-const deleteModel = (objectId) => {
-  const objectToRemove = placedObjects.find((obj) => obj.modelId === objectId);
-  if (objectToRemove) {
+
+const showConfirmationDialog = (uniqueId) => {
+  const dialog = document.getElementById("confirmation-dialog");
+  if (dialog) {
+    dialog.style.display = "block";
+
+    let timeoutId = setTimeout(() => {
+      dialog.style.display = "none";
+      console.log(
+        "Confirmation dialog dismissed automatically after 5 seconds."
+      );
+    }, 5000);
+
+    const confirmButton = dialog.querySelector("#confirm-delete");
+    const cancelButton = dialog.querySelector("#cancel-delete");
+
+    const clearDialogTimeout = () => {
+      clearTimeout(timeoutId);
+    };
+
+    confirmButton.onclick = () => {
+      clearDialogTimeout();
+      deleteModel(uniqueId);
+      dialog.style.display = "none";
+    };
+
+    cancelButton.onclick = () => {
+      clearDialogTimeout();
+      dialog.style.display = "none";
+    };
+  } else {
+    console.error("Confirmation dialog not found!");
+  }
+};
+
+const deleteModel = (uniqueId) => {
+  const objectIndex = placedObjects.findIndex(
+    (obj) => obj.uniqueId === uniqueId
+  );
+
+  if (objectIndex !== -1) {
+    const objectToRemove = placedObjects[objectIndex];
     scene.remove(objectToRemove.mesh);
-    placedObjects = placedObjects.filter((obj) => obj.modelId !== objectId);
-    // alert("Model removed from the scene!");
+    placedObjects.splice(objectIndex, 1);
+    togglePopupButtonVisibility(placedObjects);
     document.getElementById("popup").style.display = "none";
+    console.log(`Object with ID ${uniqueId} removed.`);
   } else {
     alert("Model not found in the scene!");
   }
@@ -281,6 +305,8 @@ const loadModel = (url, id) => {
       });
 
       console.log("Model loaded successfully:", url, id);
+
+      showHelperBlock();
     },
     undefined,
     (error) =>
@@ -314,6 +340,7 @@ const animateReticleOnPlace = () => {
 const arPlace = () => {
   if (reticle.visible && current_object) {
     const placedObject = current_object.clone();
+    const uniqueId = uuidv4();
     placedObject.position.setFromMatrixPosition(reticle.matrix);
     placedObject.rotation.copy(reticle.rotation);
     placedObject.scale.copy(current_object.scale);
@@ -323,7 +350,12 @@ const arPlace = () => {
       current_object.userData.objectId
     );
 
-    placedObject.userData.objectId = current_object.userData.objectId;
+    placedObject.userData = {
+      objectId: current_object.userData.objectId,
+      uniqueId: uniqueId,
+    };
+
+    // placedObject.userData.objectId = current_object.userData.objectId;
 
     placedObject.traverse((node) => {
       if (node.isMesh) {
@@ -334,6 +366,7 @@ const arPlace = () => {
     scene.add(placedObject);
 
     placedObjects.push({
+      uniqueId: uniqueId,
       mesh: placedObject,
       modelId: current_object.userData.objectId,
       position: placedObject.position.toArray(),
@@ -342,10 +375,12 @@ const arPlace = () => {
     });
 
     selectedObject = placedObject;
+    togglePopupButtonVisibility(placedObjects);
 
     animateReticleOnPlace();
 
     console.log("Object placed:", placedObject);
+    hideHelperBlock();
     toggleSubmitButton();
   }
 };
@@ -413,6 +448,35 @@ const render = () => {
   renderer.render(scene, camera);
 };
 
+const deleteRoomFromDatabase = async (roomId) => {
+  if (!roomId) {
+    console.warn("Room ID is missing, cannot delete room.");
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+    if (error) throw error;
+    console.log(`Room with ID ${roomId} has been deleted from the database.`);
+    roomId = null;
+  } catch (error) {
+    console.error("Failed to delete room from database:", error);
+  }
+};
+
+const startRoomCleanup = () => {
+  if (!roomId) return;
+
+  setTimeout(async () => {
+    if (roomId && placedObjects.length === 0) {
+      console.log("No objects placed and room not submitted. Deleting room...");
+      await deleteRoomFromDatabase(roomId);
+    } else {
+      console.log("Room has objects or has been submitted, skipping cleanup.");
+    }
+  }, cleanupTimeout);
+};
+
 
 const createRoom = async () => {
   if (roomId) {
@@ -433,6 +497,17 @@ const createRoom = async () => {
 
   roomId = data.id;
   console.log("Room created with ID:", roomId);
+
+  startRoomCleanup();
+
+  // window.addEventListener("beforeunload", async () => {
+  //   if (roomId && placedObjects.length > 0) {
+  //     console.log(
+  //       "User closed the window without submitting. Cleaning up room..."
+  //     );
+  //     await deleteRoomFromDatabase(roomId);
+  //   }
+  // });
 };
 
 const toggleSubmitButton = () => {
@@ -447,12 +522,23 @@ const toggleSubmitButton = () => {
   }
 };
 
+const showHelperBlock = () => {
+  const helperBlock = document.getElementById("helper-block");
+  helperBlock.classList.remove("hidden");
+};
+
+const hideHelperBlock = () => {
+  const helperBlock = document.getElementById("helper-block");
+  helperBlock.classList.add("hidden");
+};
+
 
 const init = async () => {
 
 
-
   container = document.createElement("div");
+  initPopup(placedObjects, supabase, scene);
+  createConfirmationDialog(container);
 
   document.getElementById("container").appendChild(container);
 
@@ -548,30 +634,59 @@ const init = async () => {
 
 
   renderer.domElement.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    touchDown = true;
-    touchX = e.touches[0].pageX;
-    touchY = e.touches[0].pageY;
-  });
-
-  renderer.domElement.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    touchDown = false;
+    if (e.touches.length === 2) {
+      // Pinch start
+      const dx = e.touches[0].pageX - e.touches[1].pageX;
+      const dy = e.touches[0].pageY - e.touches[1].pageY;
+      initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+      pinchScaling = true;
+    } else if (e.touches.length === 1) {
+      // Start rotation
+      lastTouchX = e.touches[0].pageX;
+      isRotating = true;
+    }
   });
 
   renderer.domElement.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (!touchDown) return;
+    if (pinchScaling && e.touches.length === 2 && selectedObject) {
+      // Handle pinch scaling
+      const dx = e.touches[0].pageX - e.touches[1].pageX;
+      const dy = e.touches[0].pageY - e.touches[1].pageY;
+      const newPinchDistance = Math.sqrt(dx * dx + dy * dy);
 
-    deltaX = e.touches[0].pageX - touchX;
-    deltaY = e.touches[0].pageY - touchY;
-    touchX = e.touches[0].pageX;
-    touchY = e.touches[0].pageY;
-    rotateObjects();
+      if (initialPinchDistance) {
+        const scaleFactor = newPinchDistance / initialPinchDistance;
+        const maxScale = 2; // Limit max scale
+        const minScale = 0.5; // Limit min scale
+        selectedObject.scale.setScalar(
+          Math.min(
+            maxScale,
+            Math.max(minScale, selectedObject.scale.x * scaleFactor)
+          )
+        );
+      }
 
-    if (selectedObject) {
-      const scaleFactor = 1 - deltaY / 1000;
-      selectedObject.scale.multiplyScalar(scaleFactor);
+      initialPinchDistance = newPinchDistance;
+    } else if (isRotating && e.touches.length === 1 && selectedObject) {
+      // Handle rotation
+      const currentTouchX = e.touches[0].pageX;
+      const rotationSpeed = 0.005; // Adjust for sensitivity
+      const deltaX = currentTouchX - lastTouchX;
+      selectedObject.rotation.y += deltaX * rotationSpeed;
+      lastTouchX = currentTouchX;
+    }
+  });
+
+  renderer.domElement.addEventListener("touchend", (e) => {
+    if (e.touches.length < 2) {
+      // Reset pinch scaling
+      initialPinchDistance = null;
+      pinchScaling = false;
+    }
+    if (e.touches.length === 0) {
+      // Reset rotation
+      isRotating = false;
+      lastTouchX = null;
     }
   });
 
@@ -593,11 +708,11 @@ const init = async () => {
         }
 
         selectedObject = clickedObject;
-        const objectId = selectedObject.userData.objectId;
+        const uniqueId = selectedObject.userData.uniqueId;
 
-        if (objectId) {
-          console.log("Selected Object ID:", objectId);
-          showObjectDetails(objectId);
+        if (uniqueId) {
+          console.log("Selected Object uniqueIdL ", uniqueId);
+          showConfirmationDialog(uniqueId);
         } else {
           console.warn("No objectId found in userData");
         }
@@ -636,6 +751,10 @@ const init = async () => {
       onboardingVideo.style.display = "none";
       navToggle.style.display = "block";
 
+      const sidenav = document.getElementById("mySidenav");
+      sidenav.classList.add("open");
+      navToggle.innerHTML = '<ion-icon name="close"></ion-icon>';
+
       arButton.textContent = "End AR Experience";
 
       toggleSubmitButton();
@@ -647,6 +766,11 @@ const init = async () => {
       onboardingVideo.style.display = "block";
       arButton.textContent = "Start AR Experience";
       toggleSubmitButton();
+
+      const sidenav = document.getElementById("mySidenav");
+      const navToggle = document.getElementById("nav-toggle");
+      sidenav.classList.remove("open");
+      navToggle.innerHTML = "<ion-icon name='menu'></ion-icon>";
     });
 
   } else {
@@ -655,6 +779,7 @@ const init = async () => {
 
   toggleSubmitButton();
 };
+
 
 const submitRoom = async () => {
   if (!roomId || placedObjects.length === 0) {

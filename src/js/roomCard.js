@@ -1,11 +1,9 @@
 
 
 export const createRoomCard = (room) => {
-  // Create card container
   const card = document.createElement("div");
   card.className = "room-card";
 
-  // Card content
   card.innerHTML = `
     <div class="room-card-header">
       <h2>Room ID: ${room.id}</h2>

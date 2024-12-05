@@ -142,6 +142,7 @@ const init = async (id) => {
 
   //  await fetchRoomDetails();
    await fetchModelsInfo();
+   fetchModels();
 
   renderer.setAnimationLoop(animate);
 
@@ -226,14 +227,26 @@ const placeModels = (frame) => {
 
       if (pose) {
         const matrix = new THREE.Matrix4().fromArray(pose.transform.matrix);
-        const floorY = new THREE.Vector3().setFromMatrixPosition(matrix).y;
+        const hitPosition = new THREE.Vector3().setFromMatrixPosition(matrix);
 
         modelsToPlace.forEach((model) => {
-          const originalPosition = model.userData.originalPosition;
+          const originalPosition = model.userData.originalPosition || {
+            x: 0,
+            y: 0,
+            z: 0,
+          };
 
-          model.position.set(originalPosition.x, floorY, originalPosition.z);
+          const boundingBox = new THREE.Box3().setFromObject(model);
+          const modelHeight = boundingBox.max.y - boundingBox.min.y;
+
+          model.position.set(
+            hitPosition.x + originalPosition.x,
+            hitPosition.y + originalPosition.y + modelHeight / 2,
+            hitPosition.z + originalPosition.z
+          );
+
           model.visible = true;
-          modelsData.push(model); 
+          modelsData.push(model);
         });
 
         modelsToPlace = [];
@@ -241,6 +254,7 @@ const placeModels = (frame) => {
     }
   }
 };
+
 
 
 const animate = (timestamp, frame) => {
