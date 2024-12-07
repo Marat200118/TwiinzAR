@@ -66,7 +66,7 @@ const toggleNav = () => {
 
   navToggle.innerHTML = isOpen
     ? '<ion-icon name="close"></ion-icon>'
-    : "<ion-icon name='menu'></ion-icon>";
+    : "<ion-icon name='add'></ion-icon>";
 };
 
 
@@ -82,8 +82,83 @@ $("#place-button").click(() => {
   arPlace();
 });
 
-const fetchModels = async () => {
+// const fetchModels = async () => {
 
+//   const { data, error } = await supabase.from("models").select("*");
+
+//   if (error) {
+//     console.error("Error fetching models:", error);
+//     alert("Failed to fetch models. Please try again later.");
+//     return;
+//   }
+
+//   const sidenav = document.querySelector(".navigation-content");
+//   const categories = {};
+
+//   data.forEach((model) => {
+//     if (!categories[model.category]) {
+//       categories[model.category] = [];
+//     }
+//     categories[model.category].push(model);
+//   });
+
+//   for (const [category, models] of Object.entries(categories)) {
+//     const categoryRow = document.createElement("div");
+//     categoryRow.className = "category-row";
+
+//     const categoryLabel = document.createElement("h3");
+//     categoryLabel.textContent = category;
+//     sidenav.appendChild(categoryLabel);
+
+//     models.forEach((model) => {
+//       const modelItem = document.createElement("div");
+//       modelItem.className = "model-item";
+//       modelItem.id = `model-${model.id}`;
+
+//       const modelName = document.createElement("p");
+//       modelName.className = "name";
+//       modelName.textContent = model.name;
+
+//       const modelCompany = document.createElement("p");
+//       modelCompany.className = "company";
+//       modelCompany.textContent = model.company;
+
+//       const previewContainer = document.createElement("div");
+//       previewContainer.id = `preview-${model.id}`;
+//       previewContainer.className = "preview-container";
+//       previewContainer.style.width = "100px";
+//       previewContainer.style.height = "100px";
+
+//       modelItem.appendChild(previewContainer);
+//       modelItem.appendChild(modelName);
+//       modelItem.appendChild(modelCompany);
+//       categoryRow.appendChild(modelItem);
+
+//       sidenav.appendChild(categoryRow);
+
+//       fetchAndRenderPreviews();
+
+//       modelItem.addEventListener("click", () => {
+//         document.querySelectorAll(".model-item").forEach((item) => {
+//           item.classList.remove("active");
+//         });
+
+//         modelItem.classList.add("active");
+
+//         if (current_object) {
+//           scene.remove(current_object);
+//         }
+
+//         loadModel(model.glb_url, model.id);
+
+//         toggleNav();
+//       });
+//     });
+//   }
+// };
+
+
+const fetchModels = async () => {
   const { data, error } = await supabase.from("models").select("*");
 
   if (error) {
@@ -93,6 +168,16 @@ const fetchModels = async () => {
   }
 
   const sidenav = document.querySelector(".navigation-content");
+  sidenav.innerHTML = ""; 
+
+  const header = document.createElement("div");
+  header.className = "menu-header";
+  header.innerHTML = `
+    <img src="./assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <h2>Choose Category</h2>
+  `;
+  sidenav.appendChild(header);
+
   const categories = {};
 
   data.forEach((model) => {
@@ -103,97 +188,80 @@ const fetchModels = async () => {
   });
 
   for (const [category, models] of Object.entries(categories)) {
-    const categoryRow = document.createElement("div");
-    categoryRow.className = "category-row";
+    const firstModelImage = models[0].model_image;
 
-    const categoryLabel = document.createElement("h3");
-    categoryLabel.textContent = category;
-    sidenav.appendChild(categoryLabel);
+    const categoryCard = document.createElement("div");
+    categoryCard.className = "category-card";
+    categoryCard.innerHTML = `
+      <div class="category-header">
+        <img src="${firstModelImage}" alt="${category}" class="category-image" />
+        <div class="category-header-text">
+          <h3>${category}</h3>
+          <p>${models.length} items</p>
+        </div>
+        <button class="view-category-button" data-category="${category}">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+    `;
+    categoryCard.addEventListener("click", () =>
+      displayCategoryObjects(category, models)
+    );
 
-    models.forEach((model) => {
-      const modelItem = document.createElement("div");
-      modelItem.className = "model-item";
-      modelItem.id = `model-${model.id}`;
-
-      const modelName = document.createElement("p");
-      modelName.className = "name";
-      modelName.textContent = model.name;
-
-      const modelCompany = document.createElement("p");
-      modelCompany.className = "company";
-      modelCompany.textContent = model.company;
-
-      const previewContainer = document.createElement("div");
-      previewContainer.id = `preview-${model.id}`;
-      previewContainer.className = "preview-container";
-      previewContainer.style.width = "100px";
-      previewContainer.style.height = "100px";
-
-      modelItem.appendChild(previewContainer);
-      modelItem.appendChild(modelName);
-      modelItem.appendChild(modelCompany);
-      categoryRow.appendChild(modelItem);
-
-      sidenav.appendChild(categoryRow);
-
-      fetchAndRenderPreviews();
-
-      modelItem.addEventListener("click", () => {
-        document.querySelectorAll(".model-item").forEach((item) => {
-          item.classList.remove("active");
-        });
-
-        modelItem.classList.add("active");
-
-        if (current_object) {
-          scene.remove(current_object);
-        }
-
-        loadModel(model.glb_url, model.id);
-
-        toggleNav();
-      });
-    });
+    sidenav.appendChild(categoryCard);
   }
 };
 
+const displayCategoryObjects = (category, models) => {
+  const sidenav = document.querySelector(".navigation-content");
+  sidenav.innerHTML = ""; 
 
-const fetchAndRenderPreviews = async () => {
-  const { data: models, error } = await supabase.from("models").select("*");
-  if (error) {
-    console.error("Error fetching models:", error);
-    return;
-  }
+  const header = document.createElement("div");
+  header.className = "menu-header";
+  header.innerHTML = `
+    <img src="./assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <h2>${category}</h2>
+  `;
+  sidenav.appendChild(header);
+
+
+  const backButton = document.createElement("button");
+  backButton.className = "back-button";
+  backButton.innerHTML = ` <ion-icon name="chevron-back-outline"></ion-icon> Back`;
+  backButton.addEventListener("click", fetchModels);
+  sidenav.appendChild(backButton);
 
   models.forEach((model) => {
-    const container = document.getElementById(`preview-${model.id}`);
-    if (container) {
-      const picture = document.createElement("picture");
+    const modelCard = document.createElement("div");
+    modelCard.className = "model-card";
+    modelCard.innerHTML = `
+      <div class="model-card-image">
+        <img src="${model.model_image}" alt="${model.name}" class="model-image" />
+      </div>
+      <div class="model-card-details">
+        <h4 class="model-name-navigation">${model.name}</h4>
+        <p class="model-company-navigation">${model.company}</p>
+        <p class="model-location-navigation">Made in <br><span class="menu-highlight">${model.company_location}</span></p>
+      </div>
+    `;
 
-      const sourceWebP = document.createElement("source");
-      sourceWebP.srcset = model.model_image.replace(".jpg", ".webp");
-      sourceWebP.type = "image/webp";
+     modelCard.addEventListener("click", () => {
+       document
+         .querySelectorAll(".model-card")
+         .forEach((card) => card.classList.remove("active"));
 
-      const sourceJpg = document.createElement("source");
-      sourceJpg.srcset = model.model_image;
-      sourceJpg.type = "image/jpeg";
+       modelCard.classList.add("active");
 
-      const img = document.createElement("img");
-      img.src = model.model_image;
-      img.alt = `${model.name} preview`;
-      img.style.width = "100%";
-      img.style.height = "100%";
+       loadModel(model.glb_url, model.id);
+       toggleNav();
+     });
 
-      picture.appendChild(sourceWebP);
-      picture.appendChild(sourceJpg);
-      picture.appendChild(img);
-
-      container.innerHTML = "";
-      container.appendChild(picture);
-    }
+    sidenav.appendChild(modelCard);
   });
-  
 };
+
+
+
 
 const createConfirmationDialog = (container) => {
   const dialog = document.createElement("div");
@@ -211,7 +279,6 @@ const createConfirmationDialog = (container) => {
   `;
   container.appendChild(dialog);
 
-  // Defer adding event listeners until the elements are guaranteed to exist
   dialog.querySelector("#cancel-delete").addEventListener("click", () => {
     dialog.style.display = "none";
   });
@@ -396,8 +463,6 @@ const onWindowResize = () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 };
-
-// showObjectDetails(1);
 
 const animate = (timestamp, frame) => {
   if (frame) {
@@ -656,8 +721,8 @@ const init = async () => {
 
       if (initialPinchDistance) {
         const scaleFactor = newPinchDistance / initialPinchDistance;
-        const maxScale = 2; // Limit max scale
-        const minScale = 0.5; // Limit min scale
+        const maxScale = 2; 
+        const minScale = 0.5;
         selectedObject.scale.setScalar(
           Math.min(
             maxScale,
@@ -670,7 +735,7 @@ const init = async () => {
     } else if (isRotating && e.touches.length === 1 && selectedObject) {
       // Handle rotation
       const currentTouchX = e.touches[0].pageX;
-      const rotationSpeed = 0.005; // Adjust for sensitivity
+      const rotationSpeed = 0.005; 
       const deltaX = currentTouchX - lastTouchX;
       selectedObject.rotation.y += deltaX * rotationSpeed;
       lastTouchX = currentTouchX;
@@ -696,7 +761,7 @@ const init = async () => {
 
     raycaster.setFromCamera(pointer, camera);
 
-    const intersects = raycaster.intersectObjects(scene.children, true); // Ensure recursive check
+    const intersects = raycaster.intersectObjects(scene.children, true);
     if (intersects.length > 0) {
       const [hit] = intersects;
       if (hit.object && hit.object.isMesh) {

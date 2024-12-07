@@ -27,13 +27,6 @@ export const generateHighQualityPreview = async (
         try {
           const model = gltf.scene;
 
-          // let hasLights = false;
-          // model.traverse((node) => {
-          //   if (node.isLight) {
-          //     hasLights = true;
-          //   }
-
-
           model.traverse((node) => {
             if (node.isMesh) {
               if (
@@ -49,15 +42,6 @@ export const generateHighQualityPreview = async (
             }
           });
 
-          //  if (!hasLights) {
-          //   console.warn("No lights found in GLTF. Adding default lights.");
-          //   const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-          //   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-          //   directionalLight.position.set(5, 5, 5);
-          //   scene.add(ambientLight, directionalLight);
-          // }
-
-          // Calculate model bounding box and adjust scale/position
           const box = new THREE.Box3().setFromObject(model);
           const center = box.getCenter(new THREE.Vector3());
           const size = box.getSize(new THREE.Vector3());
@@ -69,13 +53,11 @@ export const generateHighQualityPreview = async (
           scene.add(model);
           scene.background = new THREE.Color(0xffffff);
 
-          // Render scene
+
           renderer.render(scene, camera);
 
-          // Capture the rendered image as a Data URL
           const dataUrl = renderer.domElement.toDataURL("image/png");
 
-          // Dispose resources after successful rendering
           renderer.dispose();
           scene.clear();
 

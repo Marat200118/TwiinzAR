@@ -1,6 +1,7 @@
 :root {
   --creamy-white: #F4F8E1;
   --black: #484848;
+  --orange: #FF572A;
 }
 
 body {
@@ -51,7 +52,7 @@ ion-icon {
 
 #nav-toggle {
   font-size: 30px;
-  display: none;
+  display: none; /*to change*/
   position: absolute;
   z-index: 2;
   top: 2rem;
@@ -79,29 +80,133 @@ ion-icon {
   background: var(--black);
 }
 
-
-.model-item img {
-  border-radius: 5%;
+.menu-logo {
+  width: 8rem;
 }
 
-.model-item {
+.menu-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 auto;
-  text-align: center;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  border-radius: 5%;
-  cursor: pointer;
-  scroll-snap-align: start;
-  transition: all 0.5s ease-in-out;
+  gap: 1rem;
+  margin: 1.5rem;
 }
 
-.model-item.active {
+.menu-header h2 {
+  font-size: 2rem;
+  color: var(--orange);
+  font-weight: 500;
+}
+
+.view-category-button {
+  background-color: var(--orange);
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+}
+
+.view-category-button ion-icon {
+  color: #fff;
+}
+
+.category-card {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #FCFCEB;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.category-card:hover {
+  background-color: #f0f8ff;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-header p {
+  margin-top: 0;
+  color: #797979;
+}
+
+.category-image {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  font-family: "Quicksand", sans-serif;
+  font-size: 1rem;
+  margin: 10px;
+  padding: 5px 20px 5px 10px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button ion-icon {
+  margin-right: 5px;
+  color: #fff;
+}
+
+.back-button:hover {
+  background-color: #ddd;
+}
+
+.model-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: #FCFCEB;
+  padding: 10px;
+  margin: 10px;
+  gap: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.model-name-navigation {
+  font-size: 24px;
+  font-weight: 500;
+  font-family: "Manrope", sans-serif;
+}
+
+.model-company-navigation {
+  font-size: 20px;
+  color: #797979;
+  margin: 0;
+}
+
+.model-image {
+  width: 10rem;
+  border-radius: 10px;
+}
+
+.menu-highlight {
+  font-weight: 500;
+  color: var(--orange);
+}
+
+
+.model-card.active {
   background-color: #CBFA56;
 }
-
+/* 
 .category-row::-webkit-scrollbar {
   height: 4px; 
 }
@@ -113,7 +218,7 @@ ion-icon {
 
 .category-row::-webkit-scrollbar-track {
   background: transparent;
-}
+} */
 
 p.name {
   font-size: 1rem;
@@ -123,7 +228,6 @@ p.name {
 }
 
 .navigation-content {
-  padding-left: 1rem;
   padding-bottom: 1rem;
 }
 
@@ -140,10 +244,6 @@ p.company {
   overflow-x: auto;
   padding: 0.5rem 0;
   scroll-snap-type: x mandatory;
-}
-
-.navigation-content h3 {
-  margin-top: 1.5rem;
 }
 
 .sidenav a {
