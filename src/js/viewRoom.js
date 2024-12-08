@@ -19,18 +19,16 @@ const fetchRoomDetails = async () => {
   try {
     const { data: room, error } = await supabase
       .from("rooms")
-      .select("name, author_name, room_image")
+      .select("created_by_name", "room_name")
       .eq("id", roomId)
       .single();
 
     if (error) throw error;
 
-    document.getElementById("room-name").textContent = room.name;
-    document.getElementById(
-      "author-name"
-    ).textContent = `By ${room.author_name}`;
-    document.getElementById("room-image").src =
-      room.room_image || "/default-room.jpg";
+    document.getElementById("room-name").textContent = `${room.room_name}`;
+    document.getElementById("author-name").textContent = `By ${room.created_by_name}`;
+    // document.getElementById("room-image").src =
+    //   room.room_image || "/default-room.jpg";
   } catch (error) {
     console.error("Failed to fetch room details:", error);
     document.querySelector(".room-details").innerHTML =
@@ -58,7 +56,7 @@ const fetchModelsInfo = async () => {
     models.forEach(
       ({ models: { name, description, model_image, company } }) => {
         const modelCard = document.createElement("div");
-        modelCard.className = "model-card";
+        modelCard.className = "used-model";
         modelCard.innerHTML = `
         <h3>${name}</h3>
         <p>${description}</p>
@@ -87,8 +85,8 @@ const init = async (id) => {
     modelsInfo.className = "models-info";
     roomContent.appendChild(modelsInfo);
 
-    // Fetch and display models info
     // await fetchModelsInfo(modelsInfo);
+    fetchRoomDetails();
   };
 
   roomContentInformation();

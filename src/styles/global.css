@@ -15,6 +15,10 @@ h1, h2, h3, h4, h5, h6 {
   font-family: "Quicksand", sans-serif;
 }
 
+h2 {
+  font-size: 1.75rem;
+}
+
 h3 {
   font-size: 1.375rem;
 }
@@ -594,39 +598,28 @@ p.company {
   transition: all 0.5s ease-in-out;
 }
 
+.room-image {
+  width: 16rem;
+  border-radius: .5rem;
+}
+
 .room-card {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 16px;
-  margin: 16px;
+  /* margin: 16px; */
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.room-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.room-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.room-card-header {
-  margin-bottom: 8px;
-}
-
-.room-card-header h2 {
-  font-size: 20px;
-  color: #000;
-  margin: 0;
-}
-
-.room-card-body p {
-  margin: 8px 0;
-  color: #666;
-}
-
-.room-card-actions {
-  margin-top: 16px;
-}
 
 .room-card-actions .view-room {
   background-color: #007bff;
@@ -640,4 +633,10 @@ p.company {
 
 .room-card-actions .view-room:hover {
   background-color: #0056b3;
+}
+
+
+.used-model img {
+  width: 100%;
+  border-radius: 8px;
 }

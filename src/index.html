@@ -23,26 +23,91 @@
   <div id="container">
     <div class="main-page-content">
       <h1>Dream it, AR do it!</h1>
-      <p>Discover, experiment and play with materials, colours and shapes in the world of Twiinz.</p>
-      <p class="highlight">Now in augmented reality!</p>
-     <img src="assets/video.png" alt="video" class="video">
-     <div class="how-to">
-      <h2>How to use:</h2>
-      <p>1. Choose the furniture from menu</p>
-      <dotlottie-player src="https://lottie.host/dd365b43-2565-47f2-afb3-97d9056fa0a5/LRuw1ptjAb.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
-      <p>2. Rotate and Scale it as you wish!</p>
-      <dotlottie-player src="https://lottie.host/ea0495d8-3c2d-4cec-b663-34424cbab0d2/5nh1fl4M22.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
-      <!-- <h2>How it works:</h2>
-      <p>1. Click the button below to start the AR experience</p>
-      <p>2. Point your camera at a flat surface</p>
-      <p>3. Tap the screen to place the object</p>
-      <p>4. Move around the object to view it from different angles</p> -->
+      <p class="main-page-paragraph"><span>Twiinz World</span> is now on phone!
+      Check out our new AR game and build your Dream Room!</p>
+      <p class="highlight">Take a look and try it out yourself!</p>
+      <img src="assets/video.png" alt="video" class="video">
+      <div class="how-to">
+        <h2>How to?</h2>
+        <div class="how-to-step">
+        <div class="how-to-text">
+          <h3 class="how-to-text-heading">Step 1</h3>
+          <p>Select the furniture from menu</p>
+        </div>
+        <div class="how-to-animation">
+          <img src="assets/room1.png" alt="Step 1">
+        </div>
+        </div>
+        <div class="how-to-step reverse">
+        <div class="how-to-text">
+          <h3 class="how-to-text-heading">Step 2</h3>
+          <p>Rotate and scale your furniture</p>
+        </div>
+        <div class="how-to-animation">
+          <img src="assets/room1.png" alt="Step 1">
+        </div>
+        </div>
+        <div class="how-to-step">
+        <div class="how-to-text">
+          <h3 class="how-to-text-heading">Step 3</h3>
+          <p>Tap on the button, to know more about your selected furniture</p>
+        </div>
+        <div class="how-to-animation">
+          <img src="assets/room1.png" alt="Step 1">
+        </div>
+        </div>
+      </div>
+      <!-- <div class="nominees-section">
+        <h2>Nominees 2024</h2>
+      </div> -->
+      <div class="about-section">
+        <h2>About Twiinz.World</h2>
+        <p>
+          Twiinz.world is a contemporary STEAM education tool that focuses on inspiring young people for the Belgian wood, textile and furniture industry.<br><br>
+          Within an interactive 3D environment, tweens (10 to 14 year olds) learn and experiment playfully with digital copies (digital twins) of textiles, materials, furniture and other products from Belgian textile, wood and furniture companies.
+        </p>
+      </div>
+      <div class="partner-section">
+        <h2>In collaboration with</h2>
+        <div class="logo-row first-row">
+          <img src="assets/logos/trendwolves.png" alt="Trendwolves Logo">
+          <img src="assets/logos/fedustria.png" alt="Fedustria Logo">
+        </div>
+        <div class="logo-row">
+          <img src="assets/logos/wunder.png" alt="Wunder Logo">
+          <img src="assets/logos/vipack.png" alt="Vipack Logo">
+          <img src="assets/logos/quickstep.png" alt="Quickstep Logo">
+        </div>
+        <div class="logo-row">
+          <img src="assets/logos/vanhoecke.png" alt="Vanhoecke Logo">
+          <img src="assets/logos/unilin.png" alt="Unilin Logo">
+          <img src="assets/logos/perfecta.png" alt="Perfecta Logo">
+        </div>
+        <div class="logo-row">
+          <img src="assets/logos/triplaco.png" alt="Triplaco Logo">
+          <img src="assets/logos/sofar.png" alt="UniSofarlin Logo">
+          <img src="assets/logos/moome.png" alt="Moome Logo">
+        </div>
+        <div class="logo-row">
+          <img src="assets/logos/umbrosa.png" alt="Umbrosa Logo">
+          <img src="assets/logos/norm.png" alt="Norm Logo">
+        </div>
+      </div>
     </div>
     <button type="button" class="link-to-ar">
       <img src="assets/ar-icon-white.svg" alt="AR icon" class="button-icon">
       <a href="/ar.html">START EXPERIENCE</a>
     </button>
   </div>
+  <footer>
+    <h3>Twiinz.World</h3>
+    <div class="contact-info">
+      <p>Ampla House</p>
+      <p>Coupure Rechts 88 - 9000 Gent</p>
+      <p>BE0882.982.288</p>
+    </div>
+    <p>&copy; 2021 Twiinz.World</p>
+  </footer>
 
   <script type="module" src="js/router.js"></script>
 </body>
@@ -53,14 +118,89 @@
     max-width: 8rem;
   }
 
-  .how-to {
+  footer {
+    background-color: #EADDA5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 6rem;
+    padding-top: 2rem;
+    
+  }
+
+  .contact-info {
+    display: flex;
+    margin-top: 3rem;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-info p {
+    margin: .3rem;
+  }
+
+  .logo-row img {
+    max-width: 6rem;
+  }
+
+  .logo-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  .nominees-section {
+    background-color: #FF6A3B;
+  }
+
+  .how-to-step {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .how-to-text-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #FF6A3B;
+  }
+
+  .reverse {
+    flex-direction: row-reverse;
+  }
+
+  .how-to-animation img {
+    width: 10rem;
+  }
+
+  .how-to-text p {
+    font-weight: 400;
+    max-width: 8rem;
+    min-width: 4rem;
+  }
+
+  .how-to, .about-section, .partner-section, footer {
     margin-top: 4rem;
+  }
+
+  .main-page-paragraph {
+    font-size: 20px;
+  }
+
+  .main-page-paragraph span {
+    font-weight: 700;
+    color: #FF6A3B;
   }
 
   .highlight {
     color: #A3B0FF;
     font-family: "Quicksand", sans-serif;
-    font-size: 1.5rem;
+    font-size: 20px;
+    font-weight: 500;
     margin-top: .2rem;
   }
 
@@ -115,3 +255,14 @@
   }
 
 </style>
+
+<!-- 
+<p>1. Choose the furniture from menu</p>
+<dotlottie-player src="https://lottie.host/dd365b43-2565-47f2-afb3-97d9056fa0a5/LRuw1ptjAb.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
+<p>2. Rotate and Scale it as you wish!</p>
+<dotlottie-player src="https://lottie.host/ea0495d8-3c2d-4cec-b663-34424cbab0d2/5nh1fl4M22.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
+<h2>How it works:</h2>
+      <p>1. Click the button below to start the AR experience</p>
+      <p>2. Point your camera at a flat surface</p>
+      <p>3. Tap the screen to place the object</p>
+      <p>4. Move around the object to view it from different angles</p> -->

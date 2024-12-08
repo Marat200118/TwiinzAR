@@ -173,7 +173,7 @@ const fetchModels = async () => {
   const header = document.createElement("div");
   header.className = "menu-header";
   header.innerHTML = `
-    <img src="./assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
     <h2>Choose Category</h2>
   `;
   sidenav.appendChild(header);
@@ -219,7 +219,7 @@ const displayCategoryObjects = (category, models) => {
   const header = document.createElement("div");
   header.className = "menu-header";
   header.innerHTML = `
-    <img src="./assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
     <h2>${category}</h2>
   `;
   sidenav.appendChild(header);
