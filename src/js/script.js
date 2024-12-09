@@ -8,12 +8,12 @@ import { generateHighQualityPreview } from "./renderModelPreview";
 import page from "page";
 import { v4 as uuidv4 } from "uuid";
 import { initPopup, togglePopupButtonVisibility } from "./popup.js";
+// import { showSubmissionPopup } from "./submission.js";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 
 // let supabase;
 
@@ -24,7 +24,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 //   }
 //   return await response.json();
 // };
-
 
 // const initializeSupabase = async () => {
 //   try {
@@ -40,7 +39,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-const cleanupTimeout = 180000; 
+const cleanupTimeout = 180000;
 
 let container;
 let camera, scene, renderer;
@@ -68,7 +67,6 @@ const toggleNav = () => {
     ? '<ion-icon name="close"></ion-icon>'
     : "<ion-icon name='add'></ion-icon>";
 };
-
 
 document.getElementById("nav-toggle").addEventListener("click", toggleNav);
 
@@ -157,7 +155,6 @@ $("#place-button").click(() => {
 //   }
 // };
 
-
 const fetchModels = async () => {
   const { data, error } = await supabase.from("models").select("*");
 
@@ -168,7 +165,7 @@ const fetchModels = async () => {
   }
 
   const sidenav = document.querySelector(".navigation-content");
-  sidenav.innerHTML = ""; 
+  sidenav.innerHTML = "";
 
   const header = document.createElement("div");
   header.className = "menu-header";
@@ -214,7 +211,7 @@ const fetchModels = async () => {
 
 const displayCategoryObjects = (category, models) => {
   const sidenav = document.querySelector(".navigation-content");
-  sidenav.innerHTML = ""; 
+  sidenav.innerHTML = "";
 
   const header = document.createElement("div");
   header.className = "menu-header";
@@ -223,7 +220,6 @@ const displayCategoryObjects = (category, models) => {
     <h2>${category}</h2>
   `;
   sidenav.appendChild(header);
-
 
   const backButton = document.createElement("button");
   backButton.className = "back-button";
@@ -245,23 +241,20 @@ const displayCategoryObjects = (category, models) => {
       </div>
     `;
 
-     modelCard.addEventListener("click", () => {
-       document
-         .querySelectorAll(".model-card")
-         .forEach((card) => card.classList.remove("active"));
+    modelCard.addEventListener("click", () => {
+      document
+        .querySelectorAll(".model-card")
+        .forEach((card) => card.classList.remove("active"));
 
-       modelCard.classList.add("active");
+      modelCard.classList.add("active");
 
-       loadModel(model.glb_url, model.id);
-       toggleNav();
-     });
+      loadModel(model.glb_url, model.id);
+      toggleNav();
+    });
 
     sidenav.appendChild(modelCard);
   });
 };
-
-
-
 
 const createConfirmationDialog = (container) => {
   const dialog = document.createElement("div");
@@ -290,7 +283,6 @@ const createConfirmationDialog = (container) => {
     dialog.style.display = "none";
   });
 };
-
 
 const showConfirmationDialog = (uniqueId) => {
   const dialog = document.getElementById("confirmation-dialog");
@@ -359,7 +351,12 @@ const loadModel = (url, id) => {
 
       const areaLightIntensity = 2;
 
-      const areaLight = new THREE.RectAreaLight(0xffffff, areaLightIntensity, 10, 10);
+      const areaLight = new THREE.RectAreaLight(
+        0xffffff,
+        areaLightIntensity,
+        10,
+        10
+      );
       areaLight.position.set(0, 5, 0);
       areaLight.lookAt(current_object.position);
       current_object.add(areaLight);
@@ -384,7 +381,7 @@ const loadModel = (url, id) => {
 const animateReticleOnPlace = () => {
   const originalScale = reticle.scale.clone();
   const targetScale = originalScale.clone().multiplyScalar(1.5);
-  const duration = 500; 
+  const duration = 500;
 
   const startTime = performance.now();
 
@@ -459,9 +456,11 @@ const rotateObjects = () => {
 };
 
 const onWindowResize = () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (!renderer.xr.isPresenting) {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
 };
 
 const animate = (timestamp, frame) => {
@@ -542,7 +541,6 @@ const startRoomCleanup = () => {
   }, cleanupTimeout);
 };
 
-
 const createRoom = async () => {
   if (roomId) {
     console.warn("Room already created with ID:", roomId);
@@ -563,7 +561,7 @@ const createRoom = async () => {
   roomId = data.id;
   console.log("Room created with ID:", roomId);
 
-  startRoomCleanup();
+  // startRoomCleanup();
 
   // window.addEventListener("beforeunload", async () => {
   //   if (roomId && placedObjects.length > 0) {
@@ -597,10 +595,7 @@ const hideHelperBlock = () => {
   helperBlock.classList.add("hidden");
 };
 
-
 const init = async () => {
-
-
   container = document.createElement("div");
   initPopup(placedObjects, supabase, scene);
   createConfirmationDialog(container);
@@ -644,7 +639,6 @@ const init = async () => {
     requiredFeatures: ["hit-test"],
     optionalFeatures: ["dom-overlay"],
     domOverlay: { root: document.getElementById("content") },
-
   };
 
   const createGradientTexture = () => {
@@ -665,8 +659,6 @@ const init = async () => {
     return texture;
   };
 
-
-
   reticle = new THREE.Mesh(
     new THREE.RingGeometry(0.1, 0.12, 64, 1).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({
@@ -686,27 +678,22 @@ const init = async () => {
     })
   );
   centerDot.rotateX(-Math.PI / 2);
-  reticle.add(centerDot); 
+  reticle.add(centerDot);
 
   reticle.matrixAutoUpdate = false;
   reticle.visible = false;
   scene.add(reticle);
 
-
   window.addEventListener("resize", onWindowResize);
   fetchModels();
 
-
-
   renderer.domElement.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
-      // Pinch start
       const dx = e.touches[0].pageX - e.touches[1].pageX;
       const dy = e.touches[0].pageY - e.touches[1].pageY;
       initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
       pinchScaling = true;
     } else if (e.touches.length === 1) {
-      // Start rotation
       lastTouchX = e.touches[0].pageX;
       isRotating = true;
     }
@@ -714,14 +701,13 @@ const init = async () => {
 
   renderer.domElement.addEventListener("touchmove", (e) => {
     if (pinchScaling && e.touches.length === 2 && selectedObject) {
-      // Handle pinch scaling
       const dx = e.touches[0].pageX - e.touches[1].pageX;
       const dy = e.touches[0].pageY - e.touches[1].pageY;
       const newPinchDistance = Math.sqrt(dx * dx + dy * dy);
 
       if (initialPinchDistance) {
         const scaleFactor = newPinchDistance / initialPinchDistance;
-        const maxScale = 2; 
+        const maxScale = 2;
         const minScale = 0.5;
         selectedObject.scale.setScalar(
           Math.min(
@@ -733,9 +719,8 @@ const init = async () => {
 
       initialPinchDistance = newPinchDistance;
     } else if (isRotating && e.touches.length === 1 && selectedObject) {
-      // Handle rotation
       const currentTouchX = e.touches[0].pageX;
-      const rotationSpeed = 0.005; 
+      const rotationSpeed = 0.005;
       const deltaX = currentTouchX - lastTouchX;
       selectedObject.rotation.y += deltaX * rotationSpeed;
       lastTouchX = currentTouchX;
@@ -744,12 +729,10 @@ const init = async () => {
 
   renderer.domElement.addEventListener("touchend", (e) => {
     if (e.touches.length < 2) {
-      // Reset pinch scaling
       initialPinchDistance = null;
       pinchScaling = false;
     }
     if (e.touches.length === 0) {
-      // Reset rotation
       isRotating = false;
       lastTouchX = null;
     }
@@ -809,7 +792,7 @@ const init = async () => {
     renderer.xr.addEventListener("sessionstart", () => {
       console.log("AR session started.");
       // const submitButton = document.getElementById("submit-button");
-
+      // arButton.style.display = "none";
       arButton.classList.remove("styled-ar-button");
       arButton.classList.add("stop-ar-button");
 
@@ -837,7 +820,6 @@ const init = async () => {
       sidenav.classList.remove("open");
       navToggle.innerHTML = "<ion-icon name='menu'></ion-icon>";
     });
-
   } else {
     console.warn("WebXR not supported in this environment.");
   }
@@ -845,59 +827,189 @@ const init = async () => {
   toggleSubmitButton();
 };
 
+// const submitRoom = async () => {
+//    console.log("Submit Room called");
+//    console.log("Room ID:", roomId);
+//    console.log("Placed Objects:", placedObjects);
+//   if (!roomId || placedObjects.length === 0) {
+//     alert("No objects placed or room ID missing!");
+//     return;
+//   }
+//   // showSubmissionPopup(roomId, placedObjects);
+
+//   const roomModels = placedObjects.map((object) => ({
+//     room_id: roomId,
+//     model_id: object.modelId,
+//     position: {
+//       x: object.mesh.position.x,
+//       y: object.mesh.position.y,
+//       z: object.mesh.position.z,
+//     },
+//     rotation: {
+//       x: object.mesh.rotation.x,
+//       y: object.mesh.rotation.y,
+//       z: object.mesh.rotation.z,
+//     },
+//     scale: {
+//       x: object.mesh.scale.x,
+//       y: object.mesh.scale.y,
+//       z: object.mesh.scale.z,
+//     },
+//   }));
+//   console.log("Room ID:", roomId);
+//   console.log("model id", roomModels[0].model_id);
+//   console.log("position", roomModels[0].position);
+//   console.log("rotation", roomModels[0].rotation);
+//   console.log("scale", roomModels[0].scale);
+//   console.log("Room Models Payload:", roomModels[0]);
+
+//   console.log("model_id type:", typeof current_object.userData.objectId);
+//   console.log("model_id value:", current_object.userData.objectId);
+
+//   try {
+//     if (roomModels.length === 0) {
+//       alert("No objects placed in the room!");
+//       return;
+//     }
+//     const { data, error } = await supabase
+//       .from("roommodels")
+//       .insert(roomModels)
+//       .select();
+//     if (error) throw error;
+//     alert("Room saved successfully!");
+//     console.log("Room models saved:", data);
+//     page("/gallery");
+//   } catch (error) {
+//     console.error("Error saving room models:", error);
+//     alert("Failed to save the room. Please try again.");
+//   }
+// };
 
 const submitRoom = async () => {
+  console.log("Submit Room called");
+  console.log("Room ID:", roomId);
+  console.log("Placed Objects:", placedObjects);
+
   if (!roomId || placedObjects.length === 0) {
     alert("No objects placed or room ID missing!");
     return;
   }
 
-  const roomModels = placedObjects.map((object) => ({
-    room_id: roomId,
-    model_id: object.modelId,
-    position: {
-      x: object.mesh.position.x,
-      y: object.mesh.position.y,
-      z: object.mesh.position.z,
-    },
-    rotation: {
-      x: object.mesh.rotation.x,
-      y: object.mesh.rotation.y,
-      z: object.mesh.rotation.z,
-    },
-    scale: {
-      x: object.mesh.scale.x,
-      y: object.mesh.scale.y,
-      z: object.mesh.scale.z,
-    },
-  }));
-  console.log("Room ID:", roomId);
-  console.log("model id", roomModels[0].model_id);
-  console.log("position", roomModels[0].position);
-  console.log("rotation", roomModels[0].rotation);
-  console.log("scale", roomModels[0].scale);
-  console.log("Room Models Payload:", roomModels[0]);
+  // Create the popup container
+  const submissionPopup = document.querySelector(".submission-popup");
 
-  console.log("model_id type:", typeof current_object.userData.objectId);
-  console.log("model_id value:", current_object.userData.objectId);
+  // Clear existing popup content if any
+  if (submissionPopup.style.display === "flex") return;
+  submissionPopup.innerHTML = "";
 
-  try {
-    if (roomModels.length === 0) {
-      alert("No objects placed in the room!");
-      return;
-    }
-    const { data, error } = await supabase
-      .from("roommodels")
-      .insert(roomModels)
-      .select();
-    if (error) throw error;
-    alert("Room saved successfully!");
-    console.log("Room models saved:", data);
-    page("/gallery");
-  } catch (error) {
-    console.error("Error saving room models:", error);
-    alert("Failed to save the room. Please try again.");
-  }
+  // Create the popup content
+  const popupContent = document.createElement("div");
+  popupContent.className = "popup-content";
+
+  popupContent.innerHTML = `
+      <h2>Submit Your Room</h2>
+      <form id="submission-form">
+        <label for="room-name">Room Name</label>
+        <input type="text" id="room-name" name="room_name" placeholder="Enter room name" required />
+
+        <label for="full-name">Your Full Name</label>
+        <input type="text" id="full-name" name="full_name" placeholder="Enter your full name" required />
+
+        <label for="age">Your Age</label>
+        <input type="number" id="age" name="age" placeholder="Enter your age" required />
+
+        <label for="phone-number">Phone Number</label>
+        <input type="tel" id="phone-number" name="phone_number" placeholder="Enter your phone number" required />
+
+        <label for="inspiration">Inspiration Source (optional)</label>
+        <input type="text" id="inspiration" name="inspiration" placeholder="What inspired this room?" />
+
+        <div class="popup-actions">
+          <button type="submit" class="submit-button">Submit</button>
+          <button type="button" class="cancel-button" id="cancel-popup">Cancel</button>
+        </div>
+      </form>
+  `;
+
+  submissionPopup.appendChild(popupContent);
+
+  // Show the popup
+  submissionPopup.style.display = "flex";
+  document.getElementById("room-name").focus();
+
+  // Add event listener to cancel button
+  document.getElementById("cancel-popup").addEventListener("click", () => {
+    submissionPopup.style.display = "none"; // Hide the popup
+  });
+  // Add event listener to form submission
+  document
+    .getElementById("submission-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Collect form data
+      const roomName = document.getElementById("room-name").value;
+      const fullName = document.getElementById("full-name").value;
+      const age = document.getElementById("age").value;
+      const phoneNumber = document.getElementById("phone-number").value;
+      const inspiration = document.getElementById("inspiration").value;
+
+      try {
+        // Update room details
+        const { error: roomError } = await supabase
+          .from("rooms")
+          .update({
+            room_name: roomName,
+            created_by_name: fullName,
+            creators_age: age,
+            created_by_phone: phoneNumber,
+            inspiration: inspiration || null,
+          })
+          .eq("id", roomId);
+
+        if (roomError) throw roomError;
+
+        // Prepare room models payload
+        const roomModels = placedObjects.map((object) => ({
+          room_id: roomId,
+          model_id: object.modelId,
+          position: {
+            x: object.mesh.position.x,
+            y: object.mesh.position.y,
+            z: object.mesh.position.z,
+          },
+          rotation: {
+            x: object.mesh.rotation.x,
+            y: object.mesh.rotation.y,
+            z: object.mesh.rotation.z,
+          },
+          scale: {
+            x: object.mesh.scale.x,
+            y: object.mesh.scale.y,
+            z: object.mesh.scale.z,
+          },
+        }));
+
+        if (roomModels.length === 0) {
+          alert("No objects placed in the room!");
+          return;
+        }
+
+        // Insert room models into the database
+        const { error: modelsError } = await supabase
+          .from("roommodels")
+          .insert(roomModels);
+
+        if (modelsError) throw modelsError;
+
+        alert("Room and models saved successfully!");
+        submissionPopup.style.display = "none";
+        page("/gallery");
+      } catch (error) {
+        console.error("Error saving room:", error);
+        alert("Failed to submit the room. Please try again.");
+      }
+    });
 };
 
 document.getElementById("submit-button").addEventListener("click", submitRoom);
@@ -912,17 +1024,15 @@ const isWebXRSupported = async () => {
 };
 
 const initApp = async () => {
-
   const webxrSupported = await isWebXRSupported();
 
-  
   if (webxrSupported && window.location.pathname === "/ar.html") {
     console.log("WebXR is supported. Initializing WebXR.");
     init();
   } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
     if (window.location.pathname === "/ar.html") {
       console.log("WebXR not supported. Using LaunchXR for AR support.");
-     
+
       window.LAUNCHAR.initialize({
         key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
         redirect: true,
@@ -945,5 +1055,3 @@ const initApp = async () => {
 };
 
 initApp();
-
-
