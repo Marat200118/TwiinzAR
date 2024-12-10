@@ -895,14 +895,11 @@ const submitRoom = async () => {
     return;
   }
 
-  // Create the popup container
   const submissionPopup = document.querySelector(".submission-popup");
 
-  // Clear existing popup content if any
   if (submissionPopup.style.display === "flex") return;
   submissionPopup.innerHTML = "";
 
-  // Create the popup content
   const popupContent = document.createElement("div");
   popupContent.className = "popup-content";
 
@@ -933,21 +930,17 @@ const submitRoom = async () => {
 
   submissionPopup.appendChild(popupContent);
 
-  // Show the popup
   submissionPopup.style.display = "flex";
   document.getElementById("room-name").focus();
 
-  // Add event listener to cancel button
   document.getElementById("cancel-popup").addEventListener("click", () => {
-    submissionPopup.style.display = "none"; // Hide the popup
+    submissionPopup.style.display = "none"; 
   });
-  // Add event listener to form submission
+
   document
     .getElementById("submission-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      // Collect form data
       const roomName = document.getElementById("room-name").value;
       const fullName = document.getElementById("full-name").value;
       const age = document.getElementById("age").value;
@@ -955,7 +948,6 @@ const submitRoom = async () => {
       const inspiration = document.getElementById("inspiration").value;
 
       try {
-        // Update room details
         const { error: roomError } = await supabase
           .from("rooms")
           .update({
@@ -969,7 +961,6 @@ const submitRoom = async () => {
 
         if (roomError) throw roomError;
 
-        // Prepare room models payload
         const roomModels = placedObjects.map((object) => ({
           room_id: roomId,
           model_id: object.modelId,
@@ -994,8 +985,6 @@ const submitRoom = async () => {
           alert("No objects placed in the room!");
           return;
         }
-
-        // Insert room models into the database
         const { error: modelsError } = await supabase
           .from("roommodels")
           .insert(roomModels);

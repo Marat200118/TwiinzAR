@@ -24,11 +24,12 @@ const fetchRoomDetails = async () => {
       .single();
 
     if (error) throw error;
-
     document.getElementById("room-name").textContent = `${room.room_name}`;
     document.getElementById("author-name").textContent = `By ${room.created_by_name}`;
     // document.getElementById("room-image").src =
     //   room.room_image || "/default-room.jpg";
+    console.log(room.created_by_name);
+    console.log(room);
   } catch (error) {
     console.error("Failed to fetch room details:", error);
     document.querySelector(".room-details").innerHTML =

@@ -599,17 +599,44 @@ p.company {
   transition: all 0.5s ease-in-out;
 }
 
+#gallery-container {
+  margin-top: 2rem;
+}
+
+#cards-container {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (min-width: 1024px) {
+  #cards-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 .room-image {
-  width: 16rem;
+  width: clamp(100px, 100%, 400px);
   border-radius: .5rem;
+}
+
+.room-title {
+  color: #A3B0FF;
+}
+
+.room-card a {
+  text-decoration: none;
+  color: #484848;
 }
 
 .room-card {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 16px;
-  /* margin: 16px; */
+  margin: 16px;
   background-color: #fff;
+  max-width: 25rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -636,13 +663,22 @@ p.company {
   background-color: #0056b3;
 }
 
+.logo {
+  max-width: 8rem;
+}
 
 .used-model img {
   width: 100%;
   border-radius: 8px;
 }
 
-
+.onboarding-video {
+  width: 110vw !important;
+  height: 120vh !important;
+  left: calc(50% - 55vw) !important; 
+  position: fixed;
+  top: calc(50% - 60vh) !important;
+}
 
 
 .submission-popup {
@@ -656,8 +692,8 @@ p.company {
   justify-content: flex-start;
   align-items: center;
   z-index: 1000;
-  overflow-y: auto; /* Enable scrolling for the entire overlay */
-  padding: 1rem; /* Padding for smaller screens */
+  overflow-y: auto;
+  padding: 1rem;
 }
 
 .popup-content {
@@ -667,10 +703,10 @@ p.company {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   max-width: 400px;
   width: 100%;
-  max-height: 90vh; /* Constrain height to viewport */
-  overflow-y: auto; /* Enable scrolling inside the content */
-  box-sizing: border-box; /* Ensure padding doesn't overflow */
-  animation: fadeIn 0.3s ease-in-out; /* Smooth transition when popup opens */
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .popup-content h2 {
@@ -706,12 +742,12 @@ p.company {
 .popup-actions {
   display: flex;
   justify-content: space-between;
-  gap: 1rem; /* Add spacing between buttons */
+  gap: 1rem;
 }
 
 .submit-button,
 .cancel-button {
-  flex: 1; /* Make buttons equal in size */
+  flex: 1; 
   text-align: center;
   padding: 0.8rem;
   font-size: 1rem;
@@ -738,7 +774,7 @@ p.company {
 
 .submit-button:active,
 .cancel-button:active {
-  transform: scale(0.95); /* Add a slight click effect */
+  transform: scale(0.95);
 }
 
 @keyframes fadeIn {
@@ -752,11 +788,11 @@ p.company {
   }
 }
 
-/* For mobile screens */
+
 @media (max-width: 480px) {
   .popup-content {
     padding: 1.5rem;
-    max-width: 90%; /* Reduce width on smaller screens */
+    max-width: 90%;
   }
 
   .popup-content h2 {
