@@ -22,6 +22,7 @@ export const showPopupContent = async (placedObjects, supabase, scene) => {
   popup.innerHTML = `
     <div class="popup-header">
       <div class="header-heading">
+        <p class="educational-popup-pretitle">Educational pop-up</p>
         <h2 class="popup-title">${data.name} (${currentIndex + 1}/${
     placedObjects.length
   })</h2>
@@ -31,6 +32,20 @@ export const showPopupContent = async (placedObjects, supabase, scene) => {
         <ion-icon name="close-outline"></ion-icon>
       </button>
     </div>
+    <div class="educational-popup-actions">
+    ${
+      placedObjects.length > 1
+        ? `
+        <button id="prev-object" class="nav-button-popup left">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <button id="next-object" class="nav-button-popup right">
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </button>
+      `
+        : ""
+    }
+  </div>
     <div class="popup-sections">
       <div class="popup-section">
         <h3>Description</h3>
@@ -38,7 +53,7 @@ export const showPopupContent = async (placedObjects, supabase, scene) => {
       </div>
       <div class="popup-section">
         <h3>Sustainability</h3>
-        <div>
+        <div class="sustainability-icons">
           <ion-icon name="leaf-outline"></ion-icon>
           <ion-icon name="refresh-outline"></ion-icon>
           <ion-icon name="earth-outline"></ion-icon>
@@ -48,14 +63,6 @@ export const showPopupContent = async (placedObjects, supabase, scene) => {
           data.sustainability_info || "No sustainability information available."
         }</p>
       </div>
-    </div>
-    <div class="popup-actions">
-      ${
-        placedObjects.length > 1
-          ? `<button id="prev-object">◀ Previous</button>
-             <button id="next-object">Next ▶</button>`
-          : ""
-      }
     </div>
   `;
 
