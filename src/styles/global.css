@@ -471,6 +471,7 @@ p.company {
   width: 70vw;
   left: 50%;
   display: flex;
+  gap: 1rem;
   align-items: center;
   flex-direction: row-reverse;
   transform: translateX(-50%);
@@ -490,6 +491,7 @@ p.company {
 
 .helper-block svg {
   margin-top: 10px;
+  color: var(--orange);
   margin: 0;
 }
 
@@ -648,6 +650,34 @@ p.company {
   gap: 8px;
 }
 
+footer {
+  background-color: #EADDA5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 6rem;
+  padding-top: 2rem;
+    
+}
+
+.animation-text {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  z-index: 1000;
+  text-align: center;
+}
+
+.animation-text h2 {
+  font-size: 2.5rem;
+  color: #CBFA56;
+}
+
+.animation-text p {
+  color: var(--creamy-white);
+}
+
 
 .room-card-actions .view-room {
   background-color: #007bff;
@@ -668,7 +698,7 @@ p.company {
 }
 
 .used-model img {
-  width: 100%;
+  width: 10rem;
   border-radius: 8px;
 }
 

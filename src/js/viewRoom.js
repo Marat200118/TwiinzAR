@@ -19,17 +19,23 @@ const fetchRoomDetails = async () => {
   try {
     const { data: room, error } = await supabase
       .from("rooms")
-      .select("created_by_name", "room_name")
+      .select("*")
       .eq("id", roomId)
       .single();
 
     if (error) throw error;
     document.getElementById("room-name").textContent = `${room.room_name}`;
     document.getElementById("author-name").textContent = `By ${room.created_by_name}`;
-    // document.getElementById("room-image").src =
-    //   room.room_image || "/default-room.jpg";
+    document.getElementById("room-image").src = "assets/room1.png";
     console.log(room.created_by_name);
     console.log(room);
+
+    if (room.inspiration) {
+      document.querySelector(".inspiration-heading").textContent = "Where creator took inspiration?";
+      document.querySelector(".inspiration-text").textContent =
+        room.inspiration;
+    }
+
   } catch (error) {
     console.error("Failed to fetch room details:", error);
     document.querySelector(".room-details").innerHTML =
@@ -39,7 +45,7 @@ const fetchRoomDetails = async () => {
 
 
 const fetchModelsInfo = async () => {
-  const modelsInfoContainer = document.querySelector(".models-info");
+  const modelsInfoContainer = document.querySelector(".models-card-container");
 
   try {
     const { data: models, error } = await supabase
@@ -54,15 +60,23 @@ const fetchModelsInfo = async () => {
       return;
     }
 
-    models.forEach(
-      ({ models: { name, description, model_image, company } }) => {
+    const modelCounts = models.reduce((counts, { model_id, models }) => {
+      if (!counts[model_id]) {
+        counts[model_id] = { ...models, count: 0 };
+      }
+      counts[model_id].count++;
+      return counts;
+    }, {});
+
+    Object.values(modelCounts).forEach(
+      ({ name, description, model_image, company, count }) => {
         const modelCard = document.createElement("div");
         modelCard.className = "used-model";
         modelCard.innerHTML = `
-        <h3>${name}</h3>
-        <p>${description}</p>
-        <p>Company: ${company}</p>
         <img src="${model_image}" alt="${name}" />
+        <h3>${count > 1 ? `${count}x ` : ""}${name}</h3>
+
+        <p>Company: ${company}</p>
       `;
         modelsInfoContainer.appendChild(modelCard);
       }
@@ -76,22 +90,7 @@ const fetchModelsInfo = async () => {
 const init = async (id) => {
   roomId = id;
 
-  const roomContentInformation = async () => {
-    const roomContent = document.querySelector(".room-content");
-    const roomInfoId = document.createElement("h2");
-    roomInfoId.innerHTML = "Room ID: " + id;
-    roomContent.appendChild(roomInfoId);
-
-    const modelsInfo = document.createElement("div");
-    modelsInfo.className = "models-info";
-    roomContent.appendChild(modelsInfo);
-
-    // await fetchModelsInfo(modelsInfo);
-    fetchRoomDetails();
-  };
-
-  roomContentInformation();
-
+  fetchRoomDetails();
 
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -149,16 +148,36 @@ const init = async (id) => {
   renderer.xr.addEventListener("sessionend", onSessionEnd);
 };
 
+const showHelperBlock = () => {
+  const helperBlock = document.querySelector(".room-helper-block");
+  helperBlock.classList.remove("hidden");
+};
+
+const hideHelperBlock = () => {
+  const helperBlock = document.querySelector(".room-helper-block");
+  helperBlock.classList.add("hidden");
+};
+
+
+hideHelperBlock();
+
+
 const onSessionStart = () => {
   const content = document.querySelector(".room-content");
   content.style.display = "none";
   const session = renderer.xr.getSession();
+
+  const arButton = document.querySelector(".styled-ar-button");
+  arButton.classList.remove("styled-ar-button");
+  arButton.classList.add("stop-ar-button");
 
   session.requestReferenceSpace("viewer").then((referenceSpace) => {
     session.requestHitTestSource({ space: referenceSpace }).then((source) => {
       hitTestSource = source;
     });
   });
+
+  showHelperBlock();
 
   session.addEventListener("end", () => {
     const content = document.querySelector(".room-content");
@@ -173,10 +192,15 @@ const onSessionStart = () => {
 const onSessionEnd = () => {
   // const content = document.querySelector(".room-content");
   const body = document.querySelector("body");
+  const arButton = document.querySelector(".stop-ar-button");
   body.style.display = "block";
   // content.style.display = "block";
   hitTestSource = null;
   reticle.visible = false;
+  arButton.classList.remove("stop-ar-button");
+  arButton.classList.add("styled-ar-button");
+  arButton.textContent = "START EXPERIENCE";
+  hideHelperBlock();
 };
 
 const fetchModels = async () => {
@@ -246,6 +270,7 @@ const placeModels = (frame) => {
 
           model.visible = true;
           modelsData.push(model);
+          hideHelperBlock();
         });
 
         modelsToPlace = [];

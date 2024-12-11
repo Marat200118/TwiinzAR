@@ -786,6 +786,7 @@ const init = async () => {
   });
 
   const onboardingVideo = document.querySelector(".onboarding-video");
+  const animationText = document.querySelector(".animation-text");
   const navToggle = document.getElementById("nav-toggle");
 
   if (renderer.xr) {
@@ -797,6 +798,7 @@ const init = async () => {
       arButton.classList.add("stop-ar-button");
 
       onboardingVideo.style.display = "none";
+      animationText.style.display = "none";
       navToggle.style.display = "block";
 
       const sidenav = document.getElementById("mySidenav");
@@ -812,6 +814,7 @@ const init = async () => {
     renderer.xr.addEventListener("sessionend", () => {
       console.log("AR session ended.");
       onboardingVideo.style.display = "block";
+      animationText.style.display = "block";
       arButton.textContent = "Start AR Experience";
       toggleSubmitButton();
 
