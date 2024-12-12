@@ -10,8 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
-
-
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 
   <link type="text/css" rel="stylesheet" href="/styles/global.css">
 </head>
@@ -57,9 +56,19 @@
         </div>
         </div>
       </div>
-      <!-- <div class="nominees-section">
-        <h2>Nominees 2024</h2>
-      </div> -->
+      <div class="gallery-container">
+        <h2>Explore our gallery!</h2>
+        <div class="gallery-wrapper">
+          <button id="prev-room" class="gallery-nav gallery-nav-left">
+            <span><ion-icon name="chevron-back-outline"></ion-icon></span>
+          </button>
+          <div class="gallery-preview"></div>
+          <button id="next-room" class="gallery-nav gallery-nav-right">
+            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+          </button>
+        </div>
+        <a class="link-to-gallery" href="/gallery.html">View all rooms</a>
+      </div>
       <div class="about-section">
         <h2>About Twiinz.World</h2>
         <p>
@@ -108,7 +117,7 @@
     </div>
     <p>&copy; 2021 Twiinz.World</p>
   </footer>
-
+  <script type="module" src="js/gallery-preview.js"></script>
   <script type="module" src="js/router.js"></script>
 </body>
 </html>
@@ -181,7 +190,7 @@
     min-width: 4rem;
   }
 
-  .how-to, .about-section, .partner-section, footer {
+  .how-to, .about-section, .partner-section, footer, .gallery-container {
     margin-top: 4rem;
   }
 
@@ -238,12 +247,18 @@
     width: 2rem;
   }
 
-
-
   .link-to-ar a {
     font-size: 13px;
     color: #fff;
     text-decoration: none;
+  }
+
+  .link-to-gallery {
+    text-decoration: underline;
+    font-size: 1.2rem;
+    font-weight: 500;
+    font-family: "Manrope", sans-serif;
+    color: #FF6A3B;
   }
 
   @media screen and (min-width: 1024px) {
@@ -252,15 +267,68 @@
     }
   }
 
-</style>
+.gallery-container {
+  text-align: center;
+}
 
-<!-- 
-<p>1. Choose the furniture from menu</p>
-<dotlottie-player src="https://lottie.host/dd365b43-2565-47f2-afb3-97d9056fa0a5/LRuw1ptjAb.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
-<p>2. Rotate and Scale it as you wish!</p>
-<dotlottie-player src="https://lottie.host/ea0495d8-3c2d-4cec-b663-34424cbab0d2/5nh1fl4M22.lottie" background="transparent" speed="1" style="width: 300px; height: 300px" loop autoplay></dotlottie-player>
-<h2>How it works:</h2>
-      <p>1. Click the button below to start the AR experience</p>
-      <p>2. Point your camera at a flat surface</p>
-      <p>3. Tap the screen to place the object</p>
-      <p>4. Move around the object to view it from different angles</p> -->
+.gallery-container h2 {
+  margin-bottom: 2rem;
+}
+
+.gallery-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gallery-preview {
+  width: 300px;
+  height: auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+
+.room-card {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.room-card-image img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.gallery-nav {
+  background: orange;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-nav ion-icon {
+  color: white;
+}
+
+.gallery-nav-left {
+  position: absolute;
+  left: 10px;
+}
+
+.gallery-nav-right {
+  position: absolute;
+  right: 10px;
+}
+
+</style>

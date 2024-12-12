@@ -106,7 +106,7 @@ ion-icon {
 .view-category-button {
   background-color: var(--orange);
   border: none;
-  border-radius: 50%;
+  border-radius: 1rem;
   padding: 5px;
 }
 
@@ -431,15 +431,23 @@ p.company {
 }
 
 #confirmation-dialog {
-  /* background-color: var(--creamy-white) !important; */
+  display: none;
+  background-color: #ffadab;
   position: fixed;
   top: 10rem !important;
-  color: orange !important;
+  color: var(--creamy-white);
   font-weight: bold;
-  background-color: transparent !important;
+  padding: 1rem;
+  border-radius: 1.5rem;
   width: 70vw;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+#confirmation-dialog p {
+  text-align: center;
+  font-weight: 500;
+  margin: .4rem;
 }
 
 #confirm-delete {
@@ -714,7 +722,36 @@ footer {
 }
 
 
+#delete-bin-button ion-icon {
+  color: var(--creamy-white);
+  font-size: 2rem;
+  font-weight: 300;
+  padding: 0;
+  padding-top: .3rem;
+
+}
+
+#delete-bin-button {
+  background:rgb(255, 47, 0);
+  display:none; 
+  position:fixed;
+  bottom:7rem; 
+  right:1.5rem;
+  border:none; 
+  border-radius:50%; 
+  width:3.5rem; 
+  height:3.5rem; 
+  color:white; 
+  font-size:24px; 
+  justify-content:center; 
+  align-items:center; 
+  cursor:pointer; 
+  box-shadow:0 4px 6px rgba(0,0,0,0.2);
+}
+
+
 .submission-popup {
+  font-family: "Manrope", sans-serif;
   position: fixed;
   top: 0;
   left: 0;
@@ -738,6 +775,7 @@ footer {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  margin-top: 2rem;
   box-sizing: border-box;
   animation: fadeIn 0.3s ease-in-out;
 }

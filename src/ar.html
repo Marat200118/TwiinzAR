@@ -42,6 +42,17 @@
     <div id="container" style="position: fixed;"></div>
 
     <span id="nav-toggle"><ion-icon name="menu"></ion-icon></span>
+    <button id="delete-bin-button">
+      <ion-icon name="trash-outline"></ion-icon>
+    </button>
+    
+    <div id="confirmation-dialog">
+      <p id="confirmation-text"></p>
+      <div style="text-align:center;">
+        <button id="confirm-delete" style="margin:5px; padding:10px; background:red; color:white; border:none; border-radius:5px; cursor:pointer;">Delete</button>
+        <button id="cancel-delete" style="margin:5px; padding:10px; background:rgb(0, 140, 215); color:white; border:none; border-radius:5px; cursor:pointer;">Cancel</button>
+      </div>
+    </div>
     <div class="animation-text">
       <h2>How to play?</h2>
       <p>Press button to start the experience!</p>

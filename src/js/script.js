@@ -4,11 +4,9 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
 import { createClient } from "@supabase/supabase-js";
-import { generateHighQualityPreview } from "./renderModelPreview";
 import page from "page";
 import { v4 as uuidv4 } from "uuid";
 import { initPopup, togglePopupButtonVisibility } from "./popup.js";
-// import { showSubmissionPopup } from "./submission.js";
 
 const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
 const SUPABASE_KEY =
@@ -60,8 +58,6 @@ const toggleNav = () => {
   const sidenav = document.getElementById("mySidenav");
   const navToggle = document.getElementById("nav-toggle");
   const isOpen = sidenav.classList.toggle("open");
-  // sidenav.classList.add("open");
-  // navToggle.style.display = "none";
 
   navToggle.innerHTML = isOpen
     ? '<ion-icon name="close"></ion-icon>'
@@ -79,81 +75,6 @@ $(".ar-object").click(function () {
 $("#place-button").click(() => {
   arPlace();
 });
-
-// const fetchModels = async () => {
-
-//   const { data, error } = await supabase.from("models").select("*");
-
-//   if (error) {
-//     console.error("Error fetching models:", error);
-//     alert("Failed to fetch models. Please try again later.");
-//     return;
-//   }
-
-//   const sidenav = document.querySelector(".navigation-content");
-//   const categories = {};
-
-//   data.forEach((model) => {
-//     if (!categories[model.category]) {
-//       categories[model.category] = [];
-//     }
-//     categories[model.category].push(model);
-//   });
-
-//   for (const [category, models] of Object.entries(categories)) {
-//     const categoryRow = document.createElement("div");
-//     categoryRow.className = "category-row";
-
-//     const categoryLabel = document.createElement("h3");
-//     categoryLabel.textContent = category;
-//     sidenav.appendChild(categoryLabel);
-
-//     models.forEach((model) => {
-//       const modelItem = document.createElement("div");
-//       modelItem.className = "model-item";
-//       modelItem.id = `model-${model.id}`;
-
-//       const modelName = document.createElement("p");
-//       modelName.className = "name";
-//       modelName.textContent = model.name;
-
-//       const modelCompany = document.createElement("p");
-//       modelCompany.className = "company";
-//       modelCompany.textContent = model.company;
-
-//       const previewContainer = document.createElement("div");
-//       previewContainer.id = `preview-${model.id}`;
-//       previewContainer.className = "preview-container";
-//       previewContainer.style.width = "100px";
-//       previewContainer.style.height = "100px";
-
-//       modelItem.appendChild(previewContainer);
-//       modelItem.appendChild(modelName);
-//       modelItem.appendChild(modelCompany);
-//       categoryRow.appendChild(modelItem);
-
-//       sidenav.appendChild(categoryRow);
-
-//       fetchAndRenderPreviews();
-
-//       modelItem.addEventListener("click", () => {
-//         document.querySelectorAll(".model-item").forEach((item) => {
-//           item.classList.remove("active");
-//         });
-
-//         modelItem.classList.add("active");
-
-//         if (current_object) {
-//           scene.remove(current_object);
-//         }
-
-//         loadModel(model.glb_url, model.id);
-
-//         toggleNav();
-//       });
-//     });
-//   }
-// };
 
 const fetchModels = async () => {
   const { data, error } = await supabase.from("models").select("*");
@@ -209,6 +130,7 @@ const fetchModels = async () => {
   }
 };
 
+
 const displayCategoryObjects = (category, models) => {
   const sidenav = document.querySelector(".navigation-content");
   sidenav.innerHTML = "";
@@ -256,67 +178,67 @@ const displayCategoryObjects = (category, models) => {
   });
 };
 
-const createConfirmationDialog = (container) => {
-  const dialog = document.createElement("div");
-  dialog.id = "confirmation-dialog";
-  dialog.style.borderRadius = "8px";
-  dialog.style.display = "none";
-  dialog.style.zIndex = "1000";
-  dialog.style.textAlign = "center";
-  dialog.innerHTML = `
-    <p>Are you sure you want to delete this model?</p>
-    <div>
-      <button id="confirm-delete" style="margin: 10px; padding: 8px 16px;">Delete</button>
-      <button id="cancel-delete" style="margin: 10px; padding: 8px 16px;">Cancel</button>
-    </div>
-  `;
-  container.appendChild(dialog);
+const deleteButton = document.getElementById("delete-bin-button");
+const confirmationDialog = document.getElementById("confirmation-dialog");
+const confirmationText = document.getElementById("confirmation-text");
+let deleteTimeout;
+const showDeleteButton = (object) => {
+  deleteButton.style.display = "block";
 
-  dialog.querySelector("#cancel-delete").addEventListener("click", () => {
-    dialog.style.display = "none";
-  });
+  clearTimeout(deleteTimeout);
+  deleteTimeout = setTimeout(() => {
+    deleteButton.style.display = "none";
+  }, 5000);
 
-  dialog.querySelector("#confirm-delete").addEventListener("click", () => {
-    console.warn(
-      "Confirm delete button clicked, but no uniqueId provided yet."
-    );
-    dialog.style.display = "none";
-  });
+  deleteButton.onclick = () => {
+    const {
+      objectId,
+      modelName,
+      modelCompany,
+      uniqueId,
+    } = object.userData;
+
+    // if (!modelName || !modelCompany) {
+    //   console.error("Model name or company is missing in userData.");
+    //   alert("Error: Model details are missing.");
+    //   return;
+    // }
+
+    showConfirmationDialog(objectId, modelName, modelCompany, uniqueId);
+  };
 };
 
-const showConfirmationDialog = (uniqueId) => {
-  const dialog = document.getElementById("confirmation-dialog");
-  if (dialog) {
-    dialog.style.display = "block";
+const showConfirmationDialog = (id, name, company, uniqueId) => {
+  confirmationText.textContent = `Are you sure you want to delete this model from the scene?`;
+  confirmationDialog.style.display = "block";
 
-    let timeoutId = setTimeout(() => {
-      dialog.style.display = "none";
+  let autoDismissTimeout = setTimeout(() => {
+    confirmationDialog.style.display = "none";
+    console.log("Confirmation dialog dismissed after 3 seconds of inactivity.");
+  }, 3000);
+
+  document.getElementById("confirm-delete").onclick = () => {
+    clearTimeout(autoDismissTimeout);
+    deleteModel(uniqueId);
+    confirmationDialog.style.display = "none";
+  };
+
+  document.getElementById("cancel-delete").onclick = () => {
+    clearTimeout(autoDismissTimeout);
+    confirmationDialog.style.display = "none";
+  };
+
+  confirmationDialog.onmouseenter = () => clearTimeout(autoDismissTimeout);
+  confirmationDialog.onmouseleave = () => {
+    autoDismissTimeout = setTimeout(() => {
+      confirmationDialog.style.display = "none";
       console.log(
-        "Confirmation dialog dismissed automatically after 5 seconds."
+        "Confirmation dialog dismissed after 3 seconds of inactivity."
       );
-    }, 5000);
-
-    const confirmButton = dialog.querySelector("#confirm-delete");
-    const cancelButton = dialog.querySelector("#cancel-delete");
-
-    const clearDialogTimeout = () => {
-      clearTimeout(timeoutId);
-    };
-
-    confirmButton.onclick = () => {
-      clearDialogTimeout();
-      deleteModel(uniqueId);
-      dialog.style.display = "none";
-    };
-
-    cancelButton.onclick = () => {
-      clearDialogTimeout();
-      dialog.style.display = "none";
-    };
-  } else {
-    console.error("Confirmation dialog not found!");
-  }
+    }, 3000);
+  };
 };
+
 
 const deleteModel = (uniqueId) => {
   const objectIndex = placedObjects.findIndex(
@@ -325,11 +247,10 @@ const deleteModel = (uniqueId) => {
 
   if (objectIndex !== -1) {
     const objectToRemove = placedObjects[objectIndex];
-    scene.remove(objectToRemove.mesh);
-    placedObjects.splice(objectIndex, 1);
+    scene.remove(objectToRemove.mesh); // Remove from scene
+    placedObjects.splice(objectIndex, 1); // Remove from array
     togglePopupButtonVisibility(placedObjects);
-    document.getElementById("popup").style.display = "none";
-    console.log(`Object with ID ${uniqueId} removed.`);
+    console.log(`Object with uniqueId ${uniqueId} removed.`);
   } else {
     alert("Model not found in the scene!");
   }
@@ -598,7 +519,6 @@ const hideHelperBlock = () => {
 const init = async () => {
   container = document.createElement("div");
   initPopup(placedObjects, supabase, scene);
-  createConfirmationDialog(container);
 
   document.getElementById("container").appendChild(container);
 
@@ -758,9 +678,13 @@ const init = async () => {
         selectedObject = clickedObject;
         const uniqueId = selectedObject.userData.uniqueId;
 
+        if (selectedObject.userData) {
+          showDeleteButton(selectedObject); // Show the delete button for the selected object
+        }
+
         if (uniqueId) {
           console.log("Selected Object uniqueIdL ", uniqueId);
-          showConfirmationDialog(uniqueId);
+          // showDeleteButton(selectedObject);
         } else {
           console.warn("No objectId found in userData");
         }
@@ -792,8 +716,6 @@ const init = async () => {
   if (renderer.xr) {
     renderer.xr.addEventListener("sessionstart", () => {
       console.log("AR session started.");
-      // const submitButton = document.getElementById("submit-button");
-      // arButton.style.display = "none";
       arButton.classList.remove("styled-ar-button");
       arButton.classList.add("stop-ar-button");
 
@@ -830,63 +752,33 @@ const init = async () => {
   toggleSubmitButton();
 };
 
-// const submitRoom = async () => {
-//    console.log("Submit Room called");
-//    console.log("Room ID:", roomId);
-//    console.log("Placed Objects:", placedObjects);
-//   if (!roomId || placedObjects.length === 0) {
-//     alert("No objects placed or room ID missing!");
-//     return;
-//   }
-//   // showSubmissionPopup(roomId, placedObjects);
+const adjustForKeyboard = () => {
+  const submissionPopup = document.querySelector(".submission-popup");
+  const popupContent = document.querySelector(".popup-content");
 
-//   const roomModels = placedObjects.map((object) => ({
-//     room_id: roomId,
-//     model_id: object.modelId,
-//     position: {
-//       x: object.mesh.position.x,
-//       y: object.mesh.position.y,
-//       z: object.mesh.position.z,
-//     },
-//     rotation: {
-//       x: object.mesh.rotation.x,
-//       y: object.mesh.rotation.y,
-//       z: object.mesh.rotation.z,
-//     },
-//     scale: {
-//       x: object.mesh.scale.x,
-//       y: object.mesh.scale.y,
-//       z: object.mesh.scale.z,
-//     },
-//   }));
-//   console.log("Room ID:", roomId);
-//   console.log("model id", roomModels[0].model_id);
-//   console.log("position", roomModels[0].position);
-//   console.log("rotation", roomModels[0].rotation);
-//   console.log("scale", roomModels[0].scale);
-//   console.log("Room Models Payload:", roomModels[0]);
+  window.addEventListener("resize", () => {
+    if (window.innerHeight < window.outerHeight - 150) {
 
-//   console.log("model_id type:", typeof current_object.userData.objectId);
-//   console.log("model_id value:", current_object.userData.objectId);
+      submissionPopup.style.alignItems = "flex-start"; 
+      popupContent.style.maxHeight = `${window.innerHeight - 100}px`;
+      popupContent.style.overflowY = "auto";
+    } else {
+      submissionPopup.style.alignItems = "center";
+      popupContent.style.maxHeight = "90vh";
+      popupContent.style.overflowY = "auto";
+    }
+  });
 
-//   try {
-//     if (roomModels.length === 0) {
-//       alert("No objects placed in the room!");
-//       return;
-//     }
-//     const { data, error } = await supabase
-//       .from("roommodels")
-//       .insert(roomModels)
-//       .select();
-//     if (error) throw error;
-//     alert("Room saved successfully!");
-//     console.log("Room models saved:", data);
-//     page("/gallery");
-//   } catch (error) {
-//     console.error("Error saving room models:", error);
-//     alert("Failed to save the room. Please try again.");
-//   }
-// };
+  document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("focus", (e) => {
+      const offset = e.target.getBoundingClientRect().top - 50; // Offset for better visibility
+      submissionPopup.scrollTo({
+        top: offset,
+        behavior: "smooth",
+      });
+    });
+  });
+};
 
 const submitRoom = async () => {
   console.log("Submit Room called");
@@ -935,6 +827,8 @@ const submitRoom = async () => {
 
   submissionPopup.style.display = "flex";
   document.getElementById("room-name").focus();
+
+  adjustForKeyboard();
 
   document.getElementById("cancel-popup").addEventListener("click", () => {
     submissionPopup.style.display = "none"; 
