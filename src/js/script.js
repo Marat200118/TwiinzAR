@@ -3,20 +3,20 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
 import page from "page";
 import { v4 as uuidv4 } from "uuid";
 import { initPopup, togglePopupButtonVisibility } from "./popup.js";
 
-const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
+// const SUPABASE_KEY =
+//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
+// export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-const cleanupTimeout = 180000;
+// const cleanupTimeout = 180000;
 
 let container;
 let camera, scene, renderer;
@@ -55,59 +55,6 @@ $("#place-button").click(() => {
   arPlace();
 });
 
-// const fetchModels = async () => {
-//   const { data, error } = await supabase.from("models").select("*");
-
-//   if (error) {
-//     console.error("Error fetching models:", error);
-//     alert("Failed to fetch models. Please try again later.");
-//     return;
-//   }
-
-//   const sidenav = document.querySelector(".navigation-content");
-//   sidenav.innerHTML = "";
-
-//   const header = document.createElement("div");
-//   header.className = "menu-header";
-//   header.innerHTML = `
-//     <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
-//     <h2>Choose Category</h2>
-//   `;
-//   sidenav.appendChild(header);
-
-//   const categories = {};
-
-//   data.forEach((model) => {
-//     if (!categories[model.category]) {
-//       categories[model.category] = [];
-//     }
-//     categories[model.category].push(model);
-//   });
-
-//   for (const [category, models] of Object.entries(categories)) {
-//     const firstModelImage = models[0].model_image;
-
-//     const categoryCard = document.createElement("div");
-//     categoryCard.className = "category-card";
-//     categoryCard.innerHTML = `
-//       <div class="category-header">
-//         <img src="${firstModelImage}" alt="${category}" class="category-image" />
-//         <div class="category-header-text">
-//           <h3>${category}</h3>
-//           <p>${models.length} items</p>
-//         </div>
-//         <button class="view-category-button" data-category="${category}">
-//           <ion-icon name="chevron-forward-outline"></ion-icon>
-//         </button>
-//       </div>
-//     `;
-//     categoryCard.addEventListener("click", () =>
-//       displayCategoryObjects(category, models)
-//     );
-
-//     sidenav.appendChild(categoryCard);
-//   }
-// };
 
 const fetchModels = async () => {
   try {
@@ -525,7 +472,7 @@ const hideHelperBlock = () => {
 
 const init = async () => {
   container = document.createElement("div");
-  initPopup(placedObjects, supabase, scene);
+  initPopup(placedObjects, scene);
 
   document.getElementById("container").appendChild(container);
 
@@ -838,7 +785,7 @@ const submitRoom = async () => {
   adjustForKeyboard();
 
   document.getElementById("cancel-popup").addEventListener("click", () => {
-    submissionPopup.style.display = "none"; 
+    submissionPopup.style.display = "none";
   });
 
   document
@@ -852,55 +799,55 @@ const submitRoom = async () => {
       const inspiration = document.getElementById("inspiration").value;
 
       try {
-        const { error: roomError } = await supabase
-          .from("rooms")
-          .update({
-            room_name: roomName,
-            created_by_name: fullName,
-            creators_age: age,
-            created_by_phone: phoneNumber,
-            inspiration: inspiration || null,
-          })
-          .eq("id", roomId);
-
-        if (roomError) throw roomError;
-
-        const roomModels = placedObjects.map((object) => ({
+        // Prepare data for the API
+        const roomData = {
           room_id: roomId,
-          model_id: object.modelId,
-          position: {
-            x: object.mesh.position.x,
-            y: object.mesh.position.y,
-            z: object.mesh.position.z,
-          },
-          rotation: {
-            x: object.mesh.rotation.x,
-            y: object.mesh.rotation.y,
-            z: object.mesh.rotation.z,
-          },
-          scale: {
-            x: object.mesh.scale.x,
-            y: object.mesh.scale.y,
-            z: object.mesh.scale.z,
-          },
-        }));
+          room_name: roomName,
+          created_by_name: fullName,
+          creators_age: age,
+          created_by_phone: phoneNumber,
+          inspiration: inspiration || null,
+          models: placedObjects.map((object) => ({
+            model_id: object.modelId,
+            position: {
+              x: object.mesh.position.x,
+              y: object.mesh.position.y,
+              z: object.mesh.position.z,
+            },
+            rotation: {
+              x: object.mesh.rotation.x,
+              y: object.mesh.rotation.y,
+              z: object.mesh.rotation.z,
+            },
+            scale: {
+              x: object.mesh.scale.x,
+              y: object.mesh.scale.y,
+              z: object.mesh.scale.z,
+            },
+          })),
+        };
 
-        if (roomModels.length === 0) {
-          alert("No objects placed in the room!");
+        const response = await fetch("/api/submit-room", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(roomData),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error("Error submitting room:", error);
+          alert("Failed to submit the room. Please try again.");
           return;
         }
-        const { error: modelsError } = await supabase
-          .from("roommodels")
-          .insert(roomModels);
-
-        if (modelsError) throw modelsError;
 
         alert("Room and models saved successfully!");
         submissionPopup.style.display = "none";
         page("/gallery");
       } catch (error) {
-        console.error("Error saving room:", error);
-        alert("Failed to submit the room. Please try again.");
+        console.error("Unexpected error:", error);
+        alert("An unexpected error occurred. Please try again.");
       }
     });
 };
