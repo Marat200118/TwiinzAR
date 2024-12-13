@@ -4,8 +4,8 @@ export const createRoomCard = (room) => {
   const card = document.createElement("div");
   card.className = "room-card";
 
-  const roomImage = Math.random() > 0.5 ? "assets/room1.png" : "assets/room2.png";
-  const starsImage = "assets/stars.svg";
+  const roomImage = Math.random() > 0.5 ? "./assets/room1.png" : "./assets/room2.png";
+  const starsImage = "./assets/stars.svg";
 
   card.innerHTML = `
     <a href="/rooms/${room.id}" class="room-link" data-room-id="${room.id}">

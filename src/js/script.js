@@ -13,27 +13,6 @@ const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// let supabase;
-
-// const fetchSupabaseCredentials = async () => {
-//   const response = await fetch("../api/supabase-credentials");
-//   if (!response.ok) {
-//     throw new Error("Failed to fetch Supabase credentials.");
-//   }
-//   return await response.json();
-// };
-
-// const initializeSupabase = async () => {
-//   try {
-//     const { SUPABASE_URL, SUPABASE_KEY } = await fetchSupabaseCredentials();
-//     supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-//     console.log("Supabase initialized successfully.");
-//     fetchModels();
-//   } catch (error) {
-//     console.error("Error initializing Supabase:", error);
-//     alert("Failed to initialize Supabase. Please try again.");
-//   }
-// };
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -76,15 +55,76 @@ $("#place-button").click(() => {
   arPlace();
 });
 
+// const fetchModels = async () => {
+//   const { data, error } = await supabase.from("models").select("*");
+
+//   if (error) {
+//     console.error("Error fetching models:", error);
+//     alert("Failed to fetch models. Please try again later.");
+//     return;
+//   }
+
+//   const sidenav = document.querySelector(".navigation-content");
+//   sidenav.innerHTML = "";
+
+//   const header = document.createElement("div");
+//   header.className = "menu-header";
+//   header.innerHTML = `
+//     <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+//     <h2>Choose Category</h2>
+//   `;
+//   sidenav.appendChild(header);
+
+//   const categories = {};
+
+//   data.forEach((model) => {
+//     if (!categories[model.category]) {
+//       categories[model.category] = [];
+//     }
+//     categories[model.category].push(model);
+//   });
+
+//   for (const [category, models] of Object.entries(categories)) {
+//     const firstModelImage = models[0].model_image;
+
+//     const categoryCard = document.createElement("div");
+//     categoryCard.className = "category-card";
+//     categoryCard.innerHTML = `
+//       <div class="category-header">
+//         <img src="${firstModelImage}" alt="${category}" class="category-image" />
+//         <div class="category-header-text">
+//           <h3>${category}</h3>
+//           <p>${models.length} items</p>
+//         </div>
+//         <button class="view-category-button" data-category="${category}">
+//           <ion-icon name="chevron-forward-outline"></ion-icon>
+//         </button>
+//       </div>
+//     `;
+//     categoryCard.addEventListener("click", () =>
+//       displayCategoryObjects(category, models)
+//     );
+
+//     sidenav.appendChild(categoryCard);
+//   }
+// };
+
 const fetchModels = async () => {
-  const { data, error } = await supabase.from("models").select("*");
+  try {
+    const response = await fetch("/api/models");
+    if (!response.ok) {
+      throw new Error("Failed to fetch models");
+    }
 
-  if (error) {
+    const models = await response.json();
+    populateModels(models);
+  } catch (error) {
     console.error("Error fetching models:", error);
-    alert("Failed to fetch models. Please try again later.");
-    return;
+    alert("Failed to load models. Please try again later.");
   }
+};
 
+const populateModels = (data) => {
   const sidenav = document.querySelector(".navigation-content");
   sidenav.innerHTML = "";
 
@@ -247,8 +287,8 @@ const deleteModel = (uniqueId) => {
 
   if (objectIndex !== -1) {
     const objectToRemove = placedObjects[objectIndex];
-    scene.remove(objectToRemove.mesh); // Remove from scene
-    placedObjects.splice(objectIndex, 1); // Remove from array
+    scene.remove(objectToRemove.mesh);
+    placedObjects.splice(objectIndex, 1);
     togglePopupButtonVisibility(placedObjects);
     console.log(`Object with uniqueId ${uniqueId} removed.`);
   } else {
@@ -433,66 +473,33 @@ const render = () => {
   renderer.render(scene, camera);
 };
 
-const deleteRoomFromDatabase = async (roomId) => {
-  if (!roomId) {
-    console.warn("Room ID is missing, cannot delete room.");
-    return;
-  }
-
-  try {
-    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
-    if (error) throw error;
-    console.log(`Room with ID ${roomId} has been deleted from the database.`);
-    roomId = null;
-  } catch (error) {
-    console.error("Failed to delete room from database:", error);
-  }
-};
-
-const startRoomCleanup = () => {
-  if (!roomId) return;
-
-  setTimeout(async () => {
-    if (roomId && placedObjects.length === 0) {
-      console.log("No objects placed and room not submitted. Deleting room...");
-      await deleteRoomFromDatabase(roomId);
-    } else {
-      console.log("Room has objects or has been submitted, skipping cleanup.");
-    }
-  }, cleanupTimeout);
-};
-
 const createRoom = async () => {
   if (roomId) {
     console.warn("Room already created with ID:", roomId);
     return;
   }
-  const { data, error } = await supabase
-    .from("rooms")
-    .insert({})
-    .select("id")
-    .single();
 
-  if (error) {
-    console.error("Error creating room:", error);
-    alert("Failed to create a new room. Please try again.");
-    return;
+  try {
+    const response = await fetch("/api/create-room", {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error creating room:", error);
+      alert("Failed to create a new room. Please try again.");
+      return;
+    }
+
+    const { id } = await response.json();
+    roomId = id;
+    console.log("Room created with ID:", roomId);
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    alert("An unexpected error occurred. Please try again.");
   }
-
-  roomId = data.id;
-  console.log("Room created with ID:", roomId);
-
-  // startRoomCleanup();
-
-  // window.addEventListener("beforeunload", async () => {
-  //   if (roomId && placedObjects.length > 0) {
-  //     console.log(
-  //       "User closed the window without submitting. Cleaning up room..."
-  //     );
-  //     await deleteRoomFromDatabase(roomId);
-  //   }
-  // });
 };
+
 
 const toggleSubmitButton = () => {
   const submitButton = document.getElementById("submit-button");
@@ -679,7 +686,7 @@ const init = async () => {
         const uniqueId = selectedObject.userData.uniqueId;
 
         if (selectedObject.userData) {
-          showDeleteButton(selectedObject); // Show the delete button for the selected object
+          showDeleteButton(selectedObject);
         }
 
         if (uniqueId) {
