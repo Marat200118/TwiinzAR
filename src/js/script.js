@@ -13,10 +13,8 @@ import { initPopup, togglePopupButtonVisibility } from "./popup.js";
 //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
 // export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-// const cleanupTimeout = 180000;
 
 let container;
 let camera, scene, renderer;
@@ -55,7 +53,6 @@ $("#place-button").click(() => {
   arPlace();
 });
 
-
 const fetchModels = async () => {
   try {
     const response = await fetch("/api/models");
@@ -78,7 +75,7 @@ const populateModels = (data) => {
   const header = document.createElement("div");
   header.className = "menu-header";
   header.innerHTML = `
-    <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <img src="/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
     <h2>Choose Category</h2>
   `;
   sidenav.appendChild(header);
@@ -117,7 +114,6 @@ const populateModels = (data) => {
   }
 };
 
-
 const displayCategoryObjects = (category, models) => {
   const sidenav = document.querySelector(".navigation-content");
   sidenav.innerHTML = "";
@@ -125,7 +121,7 @@ const displayCategoryObjects = (category, models) => {
   const header = document.createElement("div");
   header.className = "menu-header";
   header.innerHTML = `
-    <img src="assets/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
+    <img src="/TwiinzLogoOrange.svg" alt="Logo" class="menu-logo" />
     <h2>${category}</h2>
   `;
   sidenav.appendChild(header);
@@ -178,12 +174,7 @@ const showDeleteButton = (object) => {
   }, 5000);
 
   deleteButton.onclick = () => {
-    const {
-      objectId,
-      modelName,
-      modelCompany,
-      uniqueId,
-    } = object.userData;
+    const { objectId, modelName, modelCompany, uniqueId } = object.userData;
 
     // if (!modelName || !modelCompany) {
     //   console.error("Model name or company is missing in userData.");
@@ -225,7 +216,6 @@ const showConfirmationDialog = (id, name, company, uniqueId) => {
     }, 3000);
   };
 };
-
 
 const deleteModel = (uniqueId) => {
   const objectIndex = placedObjects.findIndex(
@@ -446,7 +436,6 @@ const createRoom = async () => {
     alert("An unexpected error occurred. Please try again.");
   }
 };
-
 
 const toggleSubmitButton = () => {
   const submitButton = document.getElementById("submit-button");
@@ -712,8 +701,7 @@ const adjustForKeyboard = () => {
 
   window.addEventListener("resize", () => {
     if (window.innerHeight < window.outerHeight - 150) {
-
-      submissionPopup.style.alignItems = "flex-start"; 
+      submissionPopup.style.alignItems = "flex-start";
       popupContent.style.maxHeight = `${window.innerHeight - 100}px`;
       popupContent.style.overflowY = "auto";
     } else {
@@ -725,7 +713,7 @@ const adjustForKeyboard = () => {
 
   document.querySelectorAll("input").forEach((input) => {
     input.addEventListener("focus", (e) => {
-      const offset = e.target.getBoundingClientRect().top - 50; // Offset for better visibility
+      const offset = e.target.getBoundingClientRect().top - 50;
       submissionPopup.scrollTo({
         top: offset,
         behavior: "smooth",
@@ -733,6 +721,7 @@ const adjustForKeyboard = () => {
     });
   });
 };
+
 
 const submitRoom = async () => {
   console.log("Submit Room called");
@@ -747,6 +736,10 @@ const submitRoom = async () => {
   const submissionPopup = document.querySelector(".submission-popup");
 
   if (submissionPopup.style.display === "flex") return;
+
+  // renderer.setAnimationLoop(null);
+  // renderer.domElement.style.visibility = "hidden";
+
   submissionPopup.innerHTML = "";
 
   const popupContent = document.createElement("div");
@@ -780,18 +773,24 @@ const submitRoom = async () => {
   submissionPopup.appendChild(popupContent);
 
   submissionPopup.style.display = "flex";
+
   document.getElementById("room-name").focus();
+  // adjustForKeyboard();
 
-  adjustForKeyboard();
+  document
+    .getElementById("cancel-popup")
+    .addEventListener("click", async () => {
+      submissionPopup.style.display = "none";
 
-  document.getElementById("cancel-popup").addEventListener("click", () => {
-    submissionPopup.style.display = "none";
-  });
+      // renderer.setAnimationLoop(animate);
+      // renderer.domElement.style.visibility = "visible";
+    });
 
   document
     .getElementById("submission-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const roomName = document.getElementById("room-name").value;
       const fullName = document.getElementById("full-name").value;
       const age = document.getElementById("age").value;
@@ -799,7 +798,6 @@ const submitRoom = async () => {
       const inspiration = document.getElementById("inspiration").value;
 
       try {
-        // Prepare data for the API
         const roomData = {
           room_id: roomId,
           room_name: roomName,
@@ -844,6 +842,10 @@ const submitRoom = async () => {
 
         alert("Room and models saved successfully!");
         submissionPopup.style.display = "none";
+
+        renderer.setAnimationLoop(animate);
+        renderer.domElement.style.visibility = "visible";
+
         page("/gallery");
       } catch (error) {
         console.error("Unexpected error:", error);
@@ -851,6 +853,7 @@ const submitRoom = async () => {
       }
     });
 };
+
 
 document.getElementById("submit-button").addEventListener("click", submitRoom);
 

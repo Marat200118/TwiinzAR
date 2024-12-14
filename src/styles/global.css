@@ -907,6 +907,7 @@ footer {
   .popup-content {
     padding: 1.5rem;
     max-width: 90%;
+    padding-bottom: 26rem;
   }
 
   .popup-content h2 {

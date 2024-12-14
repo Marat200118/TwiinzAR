@@ -4,11 +4,14 @@ export const createRoomCard = (room) => {
   const card = document.createElement("div");
   card.className = "room-card";
 
-  const roomImage = Math.random() > 0.5 ? "./assets/room1.png" : "./assets/room2.png";
-  const starsImage = "./assets/stars.svg";
+  const roomImage =
+    Math.random() > 0.5
+      ? "https://res.cloudinary.com/dbaauvn9g/image/upload/f_auto/v1734200475/room1_vlkvdb.png"
+      : "https://res.cloudinary.com/dbaauvn9g/image/upload/f_auto/v1734200479/room2_hdebu4.png";
+  const starsImage = "/stars.svg";
 
   card.innerHTML = `
-    <a href="/rooms/${room.id}" class="room-link" data-room-id="${room.id}">
+    <a href="/room.html?id=${room.id}" class="room-link" data-room-id="${room.id}">
       <div class="room-card-content">
         <div class="room-card-image">
           <img src="${roomImage}" alt="Room image" class="room-image" />

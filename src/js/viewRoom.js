@@ -17,7 +17,7 @@ const fetchRoomDetails = async () => {
     document.getElementById(
       "author-name"
     ).textContent = `By ${room.created_by_name}`;
-    document.getElementById("room-image").src = "assets/room1.png";
+    document.getElementById("room-image").src = "/room1.png";
 
     if (room.inspiration) {
       document.querySelector(".inspiration-heading").textContent =
