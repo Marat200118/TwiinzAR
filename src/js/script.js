@@ -3,18 +3,15 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import $ from "jquery";
-// import { createClient } from "@supabase/supabase-js";
 import page from "page";
 import { v4 as uuidv4 } from "uuid";
 import { initPopup, togglePopupButtonVisibility } from "./popup.js";
 
-// const SUPABASE_URL = "https://zxietxwfjlcfhtiygxhe.supabase.co";
-// const SUPABASE_KEY =
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aWV0eHdmamxjZmh0aXlneGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTUzMzUsImV4cCI6MjA0NzMzMTMzNX0.XTeIR13UCRlT4elaeiKiDll1XRD1WoVnLsPd3QVVGDU";
-// export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
+const deleteButton = document.getElementById("delete-bin-button");
+const confirmationDialog = document.getElementById("confirmation-dialog");
+const confirmationText = document.getElementById("confirmation-text");
 
 let container;
 let camera, scene, renderer;
@@ -30,6 +27,12 @@ let initialPinchDistance = null;
 let pinchScaling = false;
 let isRotating = false;
 let lastTouchX = null;
+let deleteTimeout;
+
+
+document.getElementById("nav-toggle").addEventListener("click", toggleNav);
+document.getElementById("submit-button").addEventListener("click", submitRoom);
+
 
 const toggleNav = () => {
   const sidenav = document.getElementById("mySidenav");
@@ -40,8 +43,6 @@ const toggleNav = () => {
     ? '<ion-icon name="close"></ion-icon>'
     : "<ion-icon name='add'></ion-icon>";
 };
-
-document.getElementById("nav-toggle").addEventListener("click", toggleNav);
 
 $(".ar-object").click(function () {
   loadModel($(this).attr("id"));
@@ -161,10 +162,6 @@ const displayCategoryObjects = (category, models) => {
   });
 };
 
-const deleteButton = document.getElementById("delete-bin-button");
-const confirmationDialog = document.getElementById("confirmation-dialog");
-const confirmationText = document.getElementById("confirmation-text");
-let deleteTimeout;
 const showDeleteButton = (object) => {
   deleteButton.style.display = "block";
 
@@ -175,13 +172,6 @@ const showDeleteButton = (object) => {
 
   deleteButton.onclick = () => {
     const { objectId, modelName, modelCompany, uniqueId } = object.userData;
-
-    // if (!modelName || !modelCompany) {
-    //   console.error("Model name or company is missing in userData.");
-    //   alert("Error: Model details are missing.");
-    //   return;
-    // }
-
     showConfirmationDialog(objectId, modelName, modelCompany, uniqueId);
   };
 };
@@ -248,7 +238,6 @@ const loadModel = (url, id) => {
       current_object.userData.objectId = id;
 
       const areaLightIntensity = 2;
-
       const areaLight = new THREE.RectAreaLight(
         0xffffff,
         areaLightIntensity,
@@ -258,7 +247,6 @@ const loadModel = (url, id) => {
       areaLight.position.set(0, 5, 0);
       areaLight.lookAt(current_object.position);
       current_object.add(areaLight);
-
       current_object.traverse((node) => {
         if (node.isMesh) {
           node.castShadow = true;
@@ -267,7 +255,6 @@ const loadModel = (url, id) => {
       });
 
       console.log("Model loaded successfully:", url, id);
-
       showHelperBlock();
     },
     undefined,
@@ -317,8 +304,6 @@ const arPlace = () => {
       uniqueId: uniqueId,
     };
 
-    // placedObject.userData.objectId = current_object.userData.objectId;
-
     placedObject.traverse((node) => {
       if (node.isMesh) {
         node.userData.objectId = current_object.userData.objectId;
@@ -344,12 +329,6 @@ const arPlace = () => {
     console.log("Object placed:", placedObject);
     hideHelperBlock();
     toggleSubmitButton();
-  }
-};
-
-const rotateObjects = () => {
-  if (selectedObject) {
-    selectedObject.rotation.y += deltaX / 100;
   }
 };
 
@@ -627,7 +606,6 @@ const init = async () => {
 
         if (uniqueId) {
           console.log("Selected Object uniqueIdL ", uniqueId);
-          // showDeleteButton(selectedObject);
         } else {
           console.warn("No objectId found in userData");
         }
@@ -722,7 +700,6 @@ const adjustForKeyboard = () => {
   });
 };
 
-
 const submitRoom = async () => {
   console.log("Submit Room called");
   console.log("Room ID:", roomId);
@@ -736,9 +713,6 @@ const submitRoom = async () => {
   const submissionPopup = document.querySelector(".submission-popup");
 
   if (submissionPopup.style.display === "flex") return;
-
-  // renderer.setAnimationLoop(null);
-  // renderer.domElement.style.visibility = "hidden";
 
   submissionPopup.innerHTML = "";
 
@@ -781,9 +755,6 @@ const submitRoom = async () => {
     .getElementById("cancel-popup")
     .addEventListener("click", async () => {
       submissionPopup.style.display = "none";
-
-      // renderer.setAnimationLoop(animate);
-      // renderer.domElement.style.visibility = "visible";
     });
 
   document
@@ -853,9 +824,6 @@ const submitRoom = async () => {
       }
     });
 };
-
-
-document.getElementById("submit-button").addEventListener("click", submitRoom);
 
 const isWebXRSupported = async () => {
   if (!navigator.xr) return false;
