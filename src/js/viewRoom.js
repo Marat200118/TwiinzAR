@@ -4,6 +4,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 let scene, camera, renderer, reticle, hitTestSource, hitTestSourceRequested;
 const loader = new GLTFLoader();
+const urlParams = new URLSearchParams(window.location.search);
+const roomIdFromUrl = urlParams.get("id");
 let modelsToPlace = [];
 let roomId;
 
@@ -73,7 +75,7 @@ const fetchModelsInfo = async () => {
 
 const init = async (id) => {
   roomId = id;
-
+  hideHelperBlock();
   fetchRoomDetails();
   await fetchModelsInfo();
   fetchModels();
@@ -209,8 +211,6 @@ const hideHelperBlock = () => {
 };
 
 
-hideHelperBlock();
-
 const onSessionStart = () => {
   const content = document.querySelector(".room-content");
   content.style.display = "none";
@@ -238,14 +238,11 @@ const onSessionStart = () => {
   hitTestSourceRequested = true;
 };
 
-//   showHelperBlock();
 
 const onSessionEnd = () => {
-  // const content = document.querySelector(".room-content");
   const body = document.querySelector("body");
   const arButton = document.querySelector(".stop-ar-button");
   body.style.display = "block";
-  // content.style.display = "block";
   hitTestSource = null;
   reticle.visible = false;
   arButton.classList.remove("stop-ar-button");
@@ -254,6 +251,36 @@ const onSessionEnd = () => {
   hideHelperBlock();
 };
 
-const urlParams = new URLSearchParams(window.location.search);
-const roomIdFromUrl = urlParams.get("id");
-init(roomIdFromUrl);
+
+
+const isWebXRSupported = async () => {
+  if (!navigator.xr) return false;
+  try {
+    return await navigator.xr.isSessionSupported("immersive-ar");
+  } catch {
+    return false;
+  }
+};
+
+const initApp = async () => {
+  const webxrSupported = await isWebXRSupported();
+  if (webxrSupported) {
+    console.log("WebXR is supported. Initializing WebXR.");
+    init(roomIdFromUrl);
+  } else if (window.LAUNCHAR && window.LAUNCHAR.isSupported) {
+    console.log("WebXR not supported. Using LaunchXR for AR support.");
+    window.LAUNCHAR.initialize({
+      key: "OT58Wuy5RITCnvlaArd1DpN9LFjIs1Nj",
+      redirect: true,
+    }).then(() => {
+      window.LAUNCHAR.on("arSessionStarted", () => {
+        console.log("LaunchXR AR session started.");
+        init(roomIdFromUrl);
+      });
+    });
+  } else {
+    console.log("Neither WebXR nor LaunchXR is supported. Using AR.js as fallback.");
+  }
+};
+
+initApp();

@@ -12,7 +12,6 @@ const fetchRooms = async () => {
     return rooms;
   } catch (err) {
     console.error("Error fetching rooms:", err);
-    alert("An error occurred while loading rooms. Please try again later.");
     return [];
   }
 };

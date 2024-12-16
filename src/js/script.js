@@ -30,10 +30,6 @@ let lastTouchX = null;
 let deleteTimeout;
 
 
-document.getElementById("nav-toggle").addEventListener("click", toggleNav);
-document.getElementById("submit-button").addEventListener("click", submitRoom);
-
-
 const toggleNav = () => {
   const sidenav = document.getElementById("mySidenav");
   const navToggle = document.getElementById("nav-toggle");
@@ -47,7 +43,7 @@ const toggleNav = () => {
 $(".ar-object").click(function () {
   loadModel($(this).attr("id"));
   const modelId = $(this).attr("id");
-  console.log("Model ID clicked:", modelId);
+  // console.log("Model ID clicked:", modelId);
 });
 
 $("#place-button").click(() => {
@@ -65,7 +61,6 @@ const fetchModels = async () => {
     populateModels(models);
   } catch (error) {
     console.error("Error fetching models:", error);
-    alert("Failed to load models. Please try again later.");
   }
 };
 
@@ -182,7 +177,6 @@ const showConfirmationDialog = (id, name, company, uniqueId) => {
 
   let autoDismissTimeout = setTimeout(() => {
     confirmationDialog.style.display = "none";
-    console.log("Confirmation dialog dismissed after 3 seconds of inactivity.");
   }, 3000);
 
   document.getElementById("confirm-delete").onclick = () => {
@@ -200,9 +194,6 @@ const showConfirmationDialog = (id, name, company, uniqueId) => {
   confirmationDialog.onmouseleave = () => {
     autoDismissTimeout = setTimeout(() => {
       confirmationDialog.style.display = "none";
-      console.log(
-        "Confirmation dialog dismissed after 3 seconds of inactivity."
-      );
     }, 3000);
   };
 };
@@ -217,16 +208,14 @@ const deleteModel = (uniqueId) => {
     scene.remove(objectToRemove.mesh);
     placedObjects.splice(objectIndex, 1);
     togglePopupButtonVisibility(placedObjects);
-    console.log(`Object with uniqueId ${uniqueId} removed.`);
+    // console.log(`Object with uniqueId ${uniqueId} removed.`);
   } else {
-    alert("Model not found in the scene!");
   }
 };
 
 const loadModel = (url, id) => {
   if (!url) {
     console.error("Invalid GLB URL:", url);
-    alert("Model URL is invalid or missing.");
     return;
   }
 
@@ -247,6 +236,18 @@ const loadModel = (url, id) => {
       areaLight.position.set(0, 5, 0);
       areaLight.lookAt(current_object.position);
       current_object.add(areaLight);
+
+      const shadowLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      shadowLight.position.set(5, 10, 5);
+      shadowLight.castShadow = true;
+      shadowLight.shadow.mapSize.width = 1024;
+      shadowLight.shadow.mapSize.height = 1024;
+      shadowLight.shadow.camera.near = 0.5;
+      shadowLight.shadow.camera.far = 50;
+
+      scene.add(shadowLight);
+
+
       current_object.traverse((node) => {
         if (node.isMesh) {
           node.castShadow = true;
@@ -254,7 +255,7 @@ const loadModel = (url, id) => {
         }
       });
 
-      console.log("Model loaded successfully:", url, id);
+      // console.log("Model loaded successfully:", url, id);
       showHelperBlock();
     },
     undefined,
@@ -294,10 +295,10 @@ const arPlace = () => {
     placedObject.rotation.copy(reticle.rotation);
     placedObject.scale.copy(current_object.scale);
     placedObject.visible = true;
-    console.log(
-      "current_object user data id",
-      current_object.userData.objectId
-    );
+    // console.log(
+    //   "current_object user data id",
+    //   current_object.userData.objectId
+    // );
 
     placedObject.userData = {
       objectId: current_object.userData.objectId,
@@ -326,7 +327,7 @@ const arPlace = () => {
 
     animateReticleOnPlace();
 
-    console.log("Object placed:", placedObject);
+    // console.log("Object placed:", placedObject);
     hideHelperBlock();
     toggleSubmitButton();
   }
@@ -403,16 +404,14 @@ const createRoom = async () => {
     if (!response.ok) {
       const error = await response.json();
       console.error("Error creating room:", error);
-      alert("Failed to create a new room. Please try again.");
       return;
     }
 
     const { id } = await response.json();
     roomId = id;
-    console.log("Room created with ID:", roomId);
+    // console.log("Room created with ID:", roomId);
   } catch (err) {
     console.error("Unexpected error:", err);
-    alert("An unexpected error occurred. Please try again.");
   }
 };
 
@@ -421,7 +420,7 @@ const toggleSubmitButton = () => {
   const arSession = renderer.xr.isPresenting;
 
   if (arSession && placedObjects.length > 0) {
-    console.log("Placed Objects Length:", placedObjects.length);
+    // console.log("Placed Objects Length:", placedObjects.length);
     submitButton.style.display = "block";
   } else {
     submitButton.style.display = "none";
@@ -590,7 +589,7 @@ const init = async () => {
     if (intersects.length > 0) {
       const [hit] = intersects;
       if (hit.object && hit.object.isMesh) {
-        console.log("Intersected object:", hit.object);
+        // console.log("Intersected object:", hit.object);
         let clickedObject = intersects[0].object;
 
         while (clickedObject.parent && clickedObject.parent !== scene) {
@@ -605,7 +604,7 @@ const init = async () => {
         }
 
         if (uniqueId) {
-          console.log("Selected Object uniqueIdL ", uniqueId);
+          // console.log("Selected Object uniqueIdL ", uniqueId);
         } else {
           console.warn("No objectId found in userData");
         }
@@ -636,7 +635,7 @@ const init = async () => {
 
   if (renderer.xr) {
     renderer.xr.addEventListener("sessionstart", () => {
-      console.log("AR session started.");
+      // console.log("AR session started.");
       arButton.classList.remove("styled-ar-button");
       arButton.classList.add("stop-ar-button");
 
@@ -655,7 +654,7 @@ const init = async () => {
     });
 
     renderer.xr.addEventListener("sessionend", () => {
-      console.log("AR session ended.");
+      // console.log("AR session ended.");
       onboardingVideo.style.display = "block";
       animationText.style.display = "block";
       arButton.textContent = "Start AR Experience";
@@ -701,12 +700,8 @@ const adjustForKeyboard = () => {
 };
 
 const submitRoom = async () => {
-  console.log("Submit Room called");
-  console.log("Room ID:", roomId);
-  console.log("Placed Objects:", placedObjects);
 
   if (!roomId || placedObjects.length === 0) {
-    alert("No objects placed or room ID missing!");
     return;
   }
 
@@ -807,11 +802,9 @@ const submitRoom = async () => {
         if (!response.ok) {
           const error = await response.json();
           console.error("Error submitting room:", error);
-          alert("Failed to submit the room. Please try again.");
           return;
         }
 
-        alert("Room and models saved successfully!");
         submissionPopup.style.display = "none";
 
         renderer.setAnimationLoop(animate);
@@ -820,10 +813,12 @@ const submitRoom = async () => {
         page("/gallery");
       } catch (error) {
         console.error("Unexpected error:", error);
-        alert("An unexpected error occurred. Please try again.");
       }
     });
 };
+
+document.getElementById("nav-toggle").addEventListener("click", toggleNav);
+document.getElementById("submit-button").addEventListener("click", submitRoom);
 
 const isWebXRSupported = async () => {
   if (!navigator.xr) return false;

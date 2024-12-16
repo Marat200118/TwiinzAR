@@ -11,11 +11,9 @@ const fetchRooms = async () => {
     }
 
     rooms = await response.json();
-    console.log("Rooms fetched:", rooms);
     updateGalleryPreview();
   } catch (error) {
     console.error("Error fetching rooms:", error);
-    alert("Failed to load rooms. Please try again later.");
   }
 };
 

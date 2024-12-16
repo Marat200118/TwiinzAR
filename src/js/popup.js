@@ -77,7 +77,6 @@ export const showPopupContent = async (placedObjects, scene) => {
     popup.style.display = "block";
   } catch (error) {
     console.error("Error fetching object details:", error);
-    alert("Failed to fetch object details.");
   }
 };
 
