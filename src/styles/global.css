@@ -29,7 +29,6 @@ p {
 }
 
 ion-icon {
-  /* background-color: #E34D28 !important; */
   border-radius: 50%;
   padding: .3rem;
   width: 2.3rem;
@@ -57,7 +56,7 @@ ion-icon {
 
 #nav-toggle {
   font-size: 30px;
-  display: none; /*to change*/
+  display: none;
   position: absolute;
   z-index: 2;
   top: 2rem;
@@ -211,19 +210,6 @@ ion-icon {
 .model-card.active {
   background-color: #CBFA56;
 }
-/* 
-.category-row::-webkit-scrollbar {
-  height: 4px; 
-}
-
-.category-row::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
-}
-
-.category-row::-webkit-scrollbar-track {
-  background: transparent;
-} */
 
 p.name {
   font-size: 1rem;
@@ -424,7 +410,6 @@ p.company {
 }
 
 .popup-delete ion-icon {
-  /* margin-right: 8px; */
   color: #fff;
   font-size: 1.2rem;
   padding: auto;
@@ -517,14 +502,6 @@ p.company {
   display: block;
 }
 
-/* #ARButton {
-  position: absolute;
-  bottom: 20px;
-  left: calc(50% - 50px);
-  display: block;
-  background-color: #007bff !important;
-} */
-
 #ARButton.styled-ar-button {
   background-color: #A3B0FF  !important;
   position: fixed !important;
@@ -535,7 +512,6 @@ p.company {
   opacity: 1 !important;
   z-index: 0 !important;
   border-radius: 1rem !important;
-  /* height: 3rem !important; */
   height: 3.5rem !important;
   left: calc(50% - 100px) !important;
   min-width: 12rem !important;
@@ -884,13 +860,6 @@ footer {
   color: var(--orange);
 }
 
-/* .nav-button-popup.left {
-  left: 2px;
-}
-
-.nav-button-popup.right {
-  right: 2px;
-} */
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -210,7 +210,6 @@ const hideHelperBlock = () => {
   helperBlock.classList.add("hidden");
 };
 
-
 const onSessionStart = () => {
   const content = document.querySelector(".room-content");
   content.style.display = "none";
@@ -238,7 +237,6 @@ const onSessionStart = () => {
   hitTestSourceRequested = true;
 };
 
-
 const onSessionEnd = () => {
   const body = document.querySelector("body");
   const arButton = document.querySelector(".stop-ar-button");
@@ -250,8 +248,6 @@ const onSessionEnd = () => {
   arButton.textContent = "START EXPERIENCE";
   hideHelperBlock();
 };
-
-
 
 const isWebXRSupported = async () => {
   if (!navigator.xr) return false;
